@@ -1,0 +1,183 @@
+import { URLSearchParamsInternal, URLInternal } from "./interfacesInternal"
+import { URLAlgorithm } from "./URLAlgorithm"
+import { isArray, isObject } from "../util"
+
+/**
+ * Represents URL query parameters.
+ */
+export class URLSearchParamsImpl implements URLSearchParamsInternal {
+
+  _list: [string, string][] = []
+  _urlObject: URLInternal | null = null
+
+  protected _algo: URLAlgorithm
+  
+  /** 
+   * Initializes a new `URLSearchParams`.
+   * 
+   * @param init - initial values of query parameters
+   */
+  constructor(init: string[][] | { [key: string]: string } | string = "") {
+    this._algo = new URLAlgorithm()
+
+    /**
+     * 1. Let query be a new URLSearchParams object.
+     * 2. If init is a sequence, then for each pair in init:
+     * 3. If pair does not contain exactly two items, then throw a TypeError.
+     * 4. Append a new name-value pair whose name is pair’s first item, and
+     * value is pair’s second item, to query’s list.
+     * 5. Otherwise, if init is a record, then for each name → value in init,
+     * append a new name-value pair whose name is name and value is value, to
+     * query’s list.
+     * 6. Otherwise, init is a string, then set query’s list to the result of
+     * parsing init.
+     * 7. Return query.
+     */
+    if (isArray(init)) {
+      for (const item of init) {
+        if (item.length !== 2) {
+          throw new TypeError("Each item of init must be a two-tuple.")
+        }
+        this._list.push([item[0], item[1]])
+      }
+    } else if (isObject(init)) {
+      for (const name in init) {
+        this._list.push([name, init[name]])
+      }      
+    } else {
+      this._list = this._algo.urlEncodedStringParser(init)
+    }
+  }
+
+  /**
+   * Runs the update steps.
+   */
+  _updateSteps(): void {
+    /**
+     * 1. Let query be the serialization of URLSearchParams object’s list.
+     * 2. If query is the empty string, then set query to null.
+     * 3. Set url object’s url’s query to query.
+     */
+    let query: string | null = this._algo.urlEncodedSerializer(this._list)
+    if (query === "") query = null
+    if (this._urlObject !== null) this._urlObject._url.query = query
+  }
+
+  /** @inheritdoc */
+  append(name: string, value: string): void {
+    /**
+     * 1. Append a new name-value pair whose name is name and value is value, 
+     * to list.
+     * 2. Run the update steps.
+     */
+    this._list.push([name, value])
+    this._updateSteps()
+  }
+
+  /** @inheritdoc */
+  delete(name: string): void {
+    /**
+     * 1. Remove all name-value pairs whose name is name from list.
+     * 2. Run the update steps.
+     */
+    for (let i = this._list.length - 1; i >=0; i--) {
+      if (this._list[i][0] === name) this._list.splice(i, 1)
+    }
+    this._updateSteps()
+  }
+
+  /** @inheritdoc */
+  get(name: string): string | null {
+    /**
+     * The get(name) method, when invoked, must return the value of the 
+     * first name-value pair whose name is name in list, if there is such
+     * a pair, and null otherwise.
+     */
+    for (const item of this._list) {
+      if (item[0] === name) return item[1]
+    }
+    return null
+  }
+
+  /** @inheritdoc */
+  getAll(name: string): string[] {
+    /**
+     * The getAll(name) method, when invoked, must return the values of all
+     * name-value pairs whose name is name, in list, in list order, and the
+     * empty sequence otherwise.
+     */
+    const values: string[] = []
+    for (const item of this._list) {
+      if (item[0] === name) values.push(item[1])
+    }
+    return values
+  }
+
+  /** @inheritdoc */
+  has(name: string): boolean {
+    /**
+     * The has(name) method, when invoked, must return true if there is 
+     * a name-value pair whose name is name in list, and false otherwise.
+     */
+    for (const item of this._list) {
+      if (item[0] === name) return true
+    }
+    return false
+  }
+
+  /** @inheritdoc */
+  set(name: string, value: string): void {
+    /**
+     * 1. If there are any name-value pairs whose name is name, in list, 
+     * set the value of the first such name-value pair to value and remove 
+     * the others.
+     * 2. Otherwise, append a new name-value pair whose name is name and value
+     * is value, to list.
+     * 3. Run the update steps.
+     */
+    const toRemove: number[] = []
+    let found = false
+    for (let i = 0; i < this._list.length; i++) {
+      if (this._list[i][0] === name) {
+        if (!found) {
+          found = true
+          this._list[i][1] = value
+        } else {
+          toRemove.push(i)
+        }
+      }
+    }
+    for (const i of toRemove) {
+      this._list.splice(i, 1)
+    }
+  }
+
+  /** @inheritdoc */
+  sort(): void {
+    /**
+     * 1. Sort all name-value pairs, if any, by their names. Sorting must be
+     * done by comparison of code units. The relative order between name-value
+     * pairs with equal names must be preserved.
+     * 2. Run the update steps.
+     */
+    this._list.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    this._updateSteps()
+  }
+
+  /** @inheritdoc */
+  *[Symbol.iterator](): IterableIterator<[string, string]> {
+    /**
+     * The value pairs to iterate over are the list name-value pairs with the
+     * key being the name and the value being the value.
+     */
+    for (const item of this._list) {
+      yield item
+    }
+  }
+
+  /** @inheritdoc */
+  toString(): string {
+    return this._algo.urlEncodedSerializer(this._list)
+  }
+
+}

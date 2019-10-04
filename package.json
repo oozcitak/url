@@ -1,0 +1,48 @@
+{
+  "name": "url",
+  "version": "0.0.1",
+  "keywords": [
+    "url",
+    "whatwg"
+  ],
+  "homepage": "http://github.com/oozcitak/url",
+  "description": "An implementation of the URL Living Standard",
+  "author": "Ozgur Ozcitak <oozcitak@gmail.com>",
+  "contributors": [],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/oozcitak/url.git"
+  },
+  "bugs": {
+    "url": "http://github.com/oozcitak/url/issues"
+  },
+  "main": "./lib/index",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "*",
+    "jest": "*",
+    "ts-jest": "*",
+    "@types/node": "*",
+    "@types/jest": "*"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "/test/.*\\.test\\.tsx?$",
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}"
+    ]
+  },
+  "scripts": {
+    "compile": "tsc",
+    "test": "tsc && jest",
+    "testChanged": "tsc && jest --onlyChanged",
+    "cover": "tsc && jest --coverage"
+  }
+}

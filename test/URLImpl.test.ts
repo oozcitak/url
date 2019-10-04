@@ -1,0 +1,7 @@
+describe('URLImpl', () => {
+
+  test('constructor', () => {
+    
+  })
+
+})
