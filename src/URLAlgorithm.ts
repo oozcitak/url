@@ -1,10 +1,9 @@
-import { isNumber, isArray } from './util'
+import { isNumber, isArray, utf8Decode, utf8Encode } from './util'
 import { URLRecordInternal } from './interfacesInternal'
 import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from './interfaces'
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
 } from '@oozcitak/infra'
-import { TextEncoder, TextDecoder } from 'util'
 import { IDNAMappingTable } from './IDNAMappingTable'
 
 /**
@@ -12,7 +11,7 @@ import { IDNAMappingTable } from './IDNAMappingTable'
  */
 export class URLAlgorithm {
   protected _validationErrorCallback: ((message: string) => void)
-  protected _idnaMappingTable: IDNAMappingTable
+  protected _idnaMappingTable: IDNAMappingTable = IDNAMappingTable.instance
 
   /**
    * Default ports for a special URL scheme.
@@ -75,7 +74,6 @@ export class URLAlgorithm {
    */
   constructor(validationErrorCallback: ((message: string) => void) = () => {}) {
     this._validationErrorCallback = validationErrorCallback
-    this._idnaMappingTable = IDNAMappingTable
   }
 
   /**
@@ -1403,7 +1401,10 @@ export class URLAlgorithm {
             /**
              * 3.3. Let bytes be the result of encoding c using encoding.
              */
-            let bytes = this.encode(c, encoding)
+            if (encoding.toUpperCase() !== "UTF-8") {
+              throw new Error("Only UTF-8 encoding is supported.")
+            }        
+            let bytes = utf8Encode(c)
             /**
              * 3.4. If bytes starts with `&#` and ends with 0x3B (;), then:
              */
@@ -1625,7 +1626,7 @@ export class URLAlgorithm {
      * coupled with an early return for failure, as domain to ASCII fails
      * on U+FFFD REPLACEMENT CHARACTER.
      */
-    const domain = this.utf8DecodeWithoutBOM(this.stringPercentDecode(input))
+    const domain = utf8Decode(this.stringPercentDecode(input))
 
     /**
      * 5. Let asciiDomain be the result of running domain to ASCII on domain.
@@ -2134,7 +2135,7 @@ export class URLAlgorithm {
         output[n] = byte
         n++
       } else {
-        const bytePoint = parseInt(this.utf8DecodeWithoutBOM(Uint8Array.of(input[i + 1], input[i + 2])), 16)
+        const bytePoint = parseInt(utf8Decode(Uint8Array.of(input[i + 1], input[i + 2])), 16)
         output[n] = bytePoint
         n++
         i += 2
@@ -2153,7 +2154,7 @@ export class URLAlgorithm {
      * 1. Let bytes be the UTF-8 encoding of input.
      * 2. Return the percent decoding of bytes.
      */
-    return this.percentDecode(this.utf8Encode(input))
+    return this.percentDecode(utf8Encode(input))
   }
 
   /**
@@ -2170,7 +2171,7 @@ export class URLAlgorithm {
      * concatenated, in the same order.
      */
     if (!percentEncodeSet.test(codePoint)) return codePoint
-    const bytes = this.utf8Encode(codePoint)
+    const bytes = utf8Encode(codePoint)
     let result = ""
     for (const byte of bytes) {
       result += this.percentEncode(byte)
@@ -2219,7 +2220,7 @@ export class URLAlgorithm {
      * UTF-8 encodes it, and then returns the result of
      * application/x-www-form-urlencoded parsing it.
      */
-    return this.urlEncodedParser(this.utf8Encode(input))
+    return this.urlEncodedParser(utf8Encode(input))
   }
 
   /**
@@ -2275,8 +2276,8 @@ export class URLAlgorithm {
        * decode without BOM on the percent decoding of name and value,
        * respectively.
        */
-      const nameString = this.utf8DecodeWithoutBOM(name)
-      const valueString = this.utf8DecodeWithoutBOM(value)
+      const nameString = utf8Decode(name)
+      const valueString = utf8Decode(value)
       /**
        * 3.6. Append (nameString, valueString) to output.
        */
@@ -2344,6 +2345,10 @@ export class URLAlgorithm {
     const encoding = (encodingOverride === undefined ||
       encodingOverride === "replacement" || encodingOverride === "UTF-16BE" ||
       encodingOverride === "UTF-16LE" ? "UTF-8" : encodingOverride)
+    if (encoding.toUpperCase() !== "UTF-8") {
+      throw new Error("Only UTF-8 encoding is supported.")
+    }
+  
     /**
      * 3. Let output be the empty string.
      */
@@ -2356,7 +2361,7 @@ export class URLAlgorithm {
        * 4.1. Let name be the result of serializing the result of encoding
        * tuple’s name, using encoding.
        */
-      const name = this.urlEncodedByteSerializer(this.encode(tuple[0], encoding))
+      const name = this.urlEncodedByteSerializer(utf8Encode(tuple[0]))
       /**
        * 4.2. Let value be tuple’s value.
        */
@@ -2370,7 +2375,7 @@ export class URLAlgorithm {
        * 4.4. Set value to the result of serializing the result of encoding
        * value, using encoding.
        */
-      value = this.urlEncodedByteSerializer(this.encode(tuple[0], encoding))
+      value = this.urlEncodedByteSerializer(utf8Encode(tuple[0]))
       /**
        * 4.5. If tuple is not the first pair in tuples, then append U+0026 (&)
        * to output.
@@ -2508,51 +2513,6 @@ export class URLAlgorithm {
     let result = origin[0] + "://" + this.hostSerializer(origin[1])
     if (origin[2] !== null) result += ":" + origin[2].toString()
     return result
-  }
-
-  /**
-   * Encodes a string with the UTF-8 encoding.
-   * This function is from the Encoding spec:
-   * https://encoding.spec.whatwg.org/#utf-8-encode
-   * 
-   * @param input - a string
-   */
-  utf8Encode(input: string): Uint8Array {
-    const encoder = new TextEncoder()
-    return encoder.encode(input)
-  }
-
-  /**
-   * Encodes a string with the given encoding.
-   * This function is from the Encoding spec:
-   * https://encoding.spec.whatwg.org/#encode
-   * 
-   * @param input - a string
-   * @param encoding - an encoding
-   */
-  encode(input: string, encoding: string): Uint8Array {
-    // TODO: Add support for encodings other than UTF-8
-    if (encoding.toUpperCase() !== "UTF-8") {
-      throw new Error("Only UTF-8 encoding is supported.")
-    }
-    return this.utf8Encode(input)
-  }
-
-  /**
-   * Encodes a string with the UTF-8 encoding.
-   * This function is from the Encoding spec:
-   * https://encoding.spec.whatwg.org/#utf-8-encode
-   * 
-   * @param input - a string
-   */
-  utf8DecodeWithoutBOM(input: Uint8Array): string {
-    /**
-     * 1. Let output be a code point stream.
-     * 2. Run UTF-8’s decoder with stream and output.
-     * 3. Return output.
-     */
-    const decoder = new TextDecoder()
-    return decoder.decode(input)
   }
 
   /**

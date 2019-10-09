@@ -23,26 +23,40 @@ export enum IDNA2008Status {
  * Date: 2019-04-01, 09:17:25 GMT
  */
 export class IDNAMappingTable {
-  private static _table: TreeMap<[Status, number[], IDNA2008Status]> | undefined = undefined
+  private static _instance: IDNAMappingTable | undefined = undefined
+  private _table = new TreeMap<[Status, number[], IDNA2008Status]>(0, 0x10FFFF,
+    [Status.Disallowed, [], IDNA2008Status.None])
+  private _tableInit = false
 
+  /**
+   * Initializes a new `IDNAMappingTable`.
+   */
   private constructor () { }
+
+  /**
+   * Gets the `IDNAMappingTable` instance.
+   */
+  static get instance(): IDNAMappingTable {
+    if (IDNAMappingTable._instance === undefined) {
+      IDNAMappingTable._instance = new IDNAMappingTable()
+    }
+    return IDNAMappingTable._instance
+  }
 
   /**
    * Gets a value from the lookup table.
    */
-  static get(key: number): [Status, number[], IDNA2008Status] {
-    if (IDNAMappingTable._table === undefined) {
-      IDNAMappingTable._table = new TreeMap<[Status, number[], IDNA2008Status]>(0, 0x10FFFF, [Status.Disallowed, [], IDNA2008Status.None])
-      IDNAMappingTable._init(IDNAMappingTable._table)
-    }
-
-    return IDNAMappingTable._table.get(key)
+  get(key: number): [Status, number[], IDNA2008Status] {
+    if (!this._tableInit) this._init(this._table)
+    return this._table.get(key)
   }
 
   /**
    * Initializes the lookup table.
    */
-  private static _init(table: TreeMap<[Status, number[], IDNA2008Status]>) {
+  private _init(table: TreeMap<[Status, number[], IDNA2008Status]>) {
+    if (this._tableInit) return
+
     table.add(0x0, 0x2c, [Status.DisallowedSTD3Valid, [], IDNA2008Status.None])
     table.add(0x2d, 0x2e, [Status.Valid, [], IDNA2008Status.None])
     table.add(0x2f, 0x2f, [Status.DisallowedSTD3Valid, [], IDNA2008Status.None])
@@ -8669,5 +8683,8 @@ export class IDNAMappingTable {
     table.add(0xffffe, 0xfffff, [Status.Disallowed, [], IDNA2008Status.None])
     table.add(0x100000, 0x10fffd, [Status.Disallowed, [], IDNA2008Status.None])
     table.add(0x10fffe, 0x10ffff, [Status.Disallowed, [], IDNA2008Status.None])
+
+    this._tableInit = true
   }
+
 }
