@@ -334,4 +334,9 @@ export class URLImpl implements URLInternal {
   /** @inheritdoc */
   toJSON(): string { return this._algo.urlSerializer(this._url) }
 
+  /** @inheritdoc */
+  toString(): string {
+    return this.href
+  }
+
 }
