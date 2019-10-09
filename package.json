@@ -1,5 +1,5 @@
 {
-  "name": "url",
+  "name": "@oozcitak/url",
   "version": "0.0.1",
   "keywords": [
     "url",
@@ -12,20 +12,27 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/oozcitak/url.git"
+    "url": "git+https://github.com/oozcitak/url.git"
   },
   "bugs": {
     "url": "http://github.com/oozcitak/url/issues"
   },
   "main": "./lib/index",
+  "types": "lib/index.d.ts",
   "engines": {
     "node": ">=6.0"
   },
-  "dependencies": {},
+  "files": [
+    "lib/**/*"
+  ],  
+  "dependencies": {
+    "@oozcitak/infra": "1.0.1"
+  },
   "devDependencies": {
     "typescript": "*",
     "jest": "*",
     "ts-jest": "*",
+    "coveralls": "*",
     "@types/node": "*",
     "@types/jest": "*"
   },
@@ -40,9 +47,6 @@
     ]
   },
   "scripts": {
-    "compile": "tsc",
-    "test": "tsc && jest",
-    "testChanged": "tsc && jest --onlyChanged",
-    "cover": "tsc && jest --coverage"
+    "test": "tsc && jest --coverage"
   }
 }

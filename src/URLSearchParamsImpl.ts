@@ -1,6 +1,6 @@
 import { URLSearchParamsInternal, URLInternal } from "./interfacesInternal"
 import { URLAlgorithm } from "./URLAlgorithm"
-import { isArray, isObject } from "../util"
+import { isArray, isObject } from "./util"
 
 /**
  * Represents URL query parameters.

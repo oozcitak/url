@@ -1,9 +1,9 @@
-import { isNumber, isArray } from '../util'
+import { isNumber, isArray } from './util'
 import { URLRecordInternal } from './interfacesInternal'
 import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from './interfaces'
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
-} from '../infra'
+} from '@oozcitak/infra'
 import { TextEncoder, TextDecoder } from 'util'
 import { IDNAMappingTable } from './IDNAMappingTable'
 
