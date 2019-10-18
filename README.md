@@ -1,7 +1,4 @@
-# url
-An implementation of the URL Living Standard
-
-# infra
+# URL
 A Javascript implementation of the [URL Living Standard](https://url.spec.whatwg.org/).
 
 [![License](http://img.shields.io/npm/l/@oozcitak/url.svg?style=flat-square)](http://opensource.org/licenses/MIT)
@@ -12,5 +9,5 @@ A Javascript implementation of the [URL Living Standard](https://url.spec.whatwg
 [![Dev Dependency Status](http://img.shields.io/david/dev/oozcitak/url.svg?style=flat-square)](https://david-dm.org/oozcitak/url)
 [![Code Coverage](https://img.shields.io/codecov/c/github/oozcitak/url?style=flat-square)](https://codecov.io/gh/oozcitak/url)
 
-# version
+# Version
 Current version implements the standard as of commit [5f8576e](https://url.spec.whatwg.org/commit-snapshots/5f8576eeb2004e973db681de3239ae39bcec4cb8/).

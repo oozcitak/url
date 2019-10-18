@@ -4,14 +4,13 @@ import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from './interfaces
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
 } from '@oozcitak/infra'
-import { IDNAMappingTable } from './IDNAMappingTable'
+import { toASCII as idnaToASCII, toUnicode as idnaToUnicode } from '@oozcitak/uts46'
 
 /**
  * Represents algorithms to manipulate URLs.
  */
 export class URLAlgorithm {
   protected _validationErrorCallback: ((message: string) => void)
-  protected _idnaMappingTable: IDNAMappingTable = IDNAMappingTable.instance
 
   /**
    * Default ports for a special URL scheme.
@@ -72,8 +71,12 @@ export class URLAlgorithm {
    * @param validationErrorCallback - a callback function to be called when a
    * validation error occurs
    */
-  constructor(validationErrorCallback: ((message: string) => void) = () => {}) {
-    this._validationErrorCallback = validationErrorCallback
+  constructor(validationErrorCallback?: ((message: string) => void)) {
+    if (validationErrorCallback === undefined) {
+      this._validationErrorCallback = ((message: string) => console.log(message))
+    } else {
+      this._validationErrorCallback = validationErrorCallback
+    }
   }
 
   /**
@@ -434,7 +437,7 @@ export class URLAlgorithm {
      * 7. If encoding override is given, set encoding to the result of getting 
      * an output encoding from encoding override.
      */
-    let state: ParserState = (stateOverride || ParserState.SchemeStart)
+    let state = stateOverride || ParserState.SchemeStart
     if (baseURL === undefined) baseURL = null
     let encoding = (encodingOverride === undefined ||
       encodingOverride === "replacement" || encodingOverride === "UTF-16BE" ||
@@ -458,7 +461,7 @@ export class URLAlgorithm {
      * after a run pointer points to the EOF code point, go to the next step.
      * Otherwise, increase pointer by one and continue with the state machine.
      */
-    while (true) {
+    while (pointer < input.length) {
       const c = (pointer === input.length ? EOF : input[pointer])
       const remaining = (pointer === input.length ? "" : input.substr(pointer + 1))
 
@@ -861,6 +864,11 @@ export class URLAlgorithm {
             pointer -= (buffer.length + 1)
             buffer = ""
             state = ParserState.Host
+          } else {
+            /**
+             * 3. Otherwise, append c to buffer.
+             */
+            buffer += c
           }
           break
 
@@ -1445,15 +1453,38 @@ export class URLAlgorithm {
           break
               
         case ParserState.Fragment:
+          /**
+           * Switching on c:
+           * - The EOF code point
+           * Do nothing.
+           * - U+0000 NULL
+           * Validation error.
+           * - Otherwise
+           * 1. If c is not a URL code point and not U+0025 (%), validation 
+           * error.
+           * 2. If c is U+0025 (%) and remaining does not start with two ASCII 
+           * hex digits, validation error.
+           * 3. UTF-8 percent encode c using the fragment percent-encode set and
+           * append the result to url’s fragment.
+           */
+          if (c === EOF) {
+            //
+          } else if (c === "\u0000") {
+            this.validationError("NULL character in input string.")
+          } else {
+            if (!this._urlCodePoints.test(c) && c !== '%') {
+              this.validationError("Unexpected character in fragment string.")
+            }
+            if (c === '%' && !/^[A-Za-z0-9][A-Za-z0-9]/.test(remaining)) {
+              this.validationError("Unexpected character in fragment string.")
+            }
+            url.fragment += this.utf8PercentEncode(c, this._fragmentPercentEncodeSet)
+          }
           break
     
       }
 
-      if (c === EOF) {
-        break
-      } else {
-        pointer++
-      }
+      pointer++
     }
 
     /**
@@ -1598,9 +1629,9 @@ export class URLAlgorithm {
     /**
      * 1. If isNotSpecial is not given, then set isNotSpecial to false.
      * 2. If input starts with U+005B ([), then:
-     * 1.1. If input does not end with U+005D (]), validation error, return
+     * 2.1. If input does not end with U+005D (]), validation error, return
      * failure.
-     * 1.2. Return the result of IPv6 parsing input with its leading U+005B ([)
+     * 2.2. Return the result of IPv6 parsing input with its leading U+005B ([)
      * and trailing U+005D (]) removed.
      */
     if (input.startsWith('[')) {
@@ -2460,7 +2491,9 @@ export class URLAlgorithm {
      * 3. If result is a failure value, validation error, return failure.
      * 4. Return result.
      */
-    const result = this.idnaToASCII(domain, false, true, true, beStrict, false, beStrict)
+    const result = idnaToASCII(domain, { useSTD3ASCIIRules: beStrict,
+      checkHyphens: false, checkBidi: true, checkJoiners: true,
+      transitionalProcessing: false, verifyDnsLength: beStrict })
     if (result === null) {
       this.validationError("Invalid domain name.")
       return null
@@ -2482,10 +2515,12 @@ export class URLAlgorithm {
      * 2. Signify validation errors for any returned errors, and then, 
      * return result.
      */
-    const errors: string[] = []
-    const result = this.idnaToUnicode(domain, false, true, true, false, false, errors)
-    if (errors.length !== 0) {
-      this.validationError("Invalid domain name. " + errors.join(', '))
+    const output = { errors: false }
+    const result = idnaToUnicode(domain, { checkHyphens: false, checkBidi: true, 
+      checkJoiners: true, useSTD3ASCIIRules: false, 
+      transitionalProcessing: false }, output)
+    if (output.errors) {
+      this.validationError("Invalid domain name.")
     }
     return result
   }
@@ -2514,43 +2549,5 @@ export class URLAlgorithm {
     if (origin[2] !== null) result += ":" + origin[2].toString()
     return result
   }
-
-  /**
-   * Converts a Unicode domain to ASCII.
-   * This function is from the Unicode IDNA spec:
-   * https://www.unicode.org/reports/tr46/#ToASCII
-   * 
-   * @param domainName - domain name
-   * @param checkHyphens 
-   * @param checkBidi 
-   * @param checkJoiners 
-   * @param useSTD3ASCIIRules 
-   * @param transitionalProcessing 
-   * @param verifyDnsLength 
-   */
-  idnaToASCII(domainName: string, checkHyphens: boolean, checkBidi: boolean,
-    checkJoiners: boolean, useSTD3ASCIIRules: boolean, 
-    transitionalProcessing: boolean, verifyDnsLength: boolean, 
-    errors: string[] = []): string | null {
-    return ""
-  }
-  
-  /**
-   * Converts a Unicode domain to ASCII.
-   * This function is from the Unicode IDNA spec:
-   * https://www.unicode.org/reports/tr46/#ToUnicode
-   * 
-   * @param domainName - domain name
-   * @param checkHyphens 
-   * @param checkBidi 
-   * @param checkJoiners 
-   * @param useSTD3ASCIIRules 
-   * @param transitionalProcessing 
-   */
-  idnaToUnicode(domainName: string, checkHyphens: boolean, checkBidi: boolean,
-    checkJoiners: boolean, useSTD3ASCIIRules: boolean, 
-    transitionalProcessing: boolean, errors: string[] = []): string {
-      return ""  
-  }  
 
 }

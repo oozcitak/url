@@ -29,7 +29,7 @@ export class URLImpl implements URLInternal {
      * 2.2. If parsedBase is failure, then throw a TypeError.
      */
     let parsedBase: URLRecordInternal | null = null
-    if (baseURL) {
+    if (baseURL !== undefined) {
       parsedBase = this._algo.basicURLParser(baseURL)
       if (parsedBase === null) {
         throw new TypeError("Invalid base URL.")

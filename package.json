@@ -24,9 +24,10 @@
   },
   "files": [
     "lib/**/*"
-  ],  
+  ],
   "dependencies": {
-    "@oozcitak/infra": "1.0.1"
+    "@oozcitak/infra": "1.0.1",
+    "@oozcitak/uts46": "0.0.4"
   },
   "devDependencies": {
     "typescript": "*",
