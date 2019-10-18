@@ -48,6 +48,7 @@
     ]
   },
   "scripts": {
-    "test": "tsc && jest --coverage"
+    "test": "tsc && jest --coverage",
+    "publish-public": "npm run test && npm publish --access public"
   }
 }
