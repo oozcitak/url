@@ -461,7 +461,7 @@ export class URLAlgorithm {
      * after a run pointer points to the EOF code point, go to the next step.
      * Otherwise, increase pointer by one and continue with the state machine.
      */
-    while (pointer < input.length) {
+    while (true) {
       const c = (pointer === input.length ? EOF : input[pointer])
       const remaining = (pointer === input.length ? "" : input.substr(pointer + 1))
 
@@ -1484,7 +1484,10 @@ export class URLAlgorithm {
     
       }
 
-      pointer++
+      if (pointer === input.length) 
+        break
+      else
+        pointer++
     }
 
     /**
@@ -2273,6 +2276,10 @@ export class URLAlgorithm {
         currentSequence.push(byte)
       }
     }
+    if (currentSequence.length !== 0) {
+      sequences.push(Uint8Array.from(currentSequence))
+    }
+
     /**
      * 2. Let output be an initially empty list of name-value tuples where both name and value hold a string.
      */
@@ -2406,7 +2413,7 @@ export class URLAlgorithm {
        * 4.4. Set value to the result of serializing the result of encoding
        * value, using encoding.
        */
-      value = this.urlEncodedByteSerializer(utf8Encode(tuple[0]))
+      value = this.urlEncodedByteSerializer(utf8Encode(value))
       /**
        * 4.5. If tuple is not the first pair in tuples, then append U+0026 (&)
        * to output.

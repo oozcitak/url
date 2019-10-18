@@ -42,7 +42,10 @@ export class URLSearchParamsImpl implements URLSearchParamsInternal {
       }
     } else if (isObject(init)) {
       for (const name in init) {
-        this._list.push([name, init[name]])
+        /* istanbul ignore else */
+        if (init.hasOwnProperty(name)) {
+          this._list.push([name, init[name]])
+        }
       }      
     } else {
       this._list = this._algo.urlEncodedStringParser(init)
