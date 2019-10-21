@@ -557,7 +557,7 @@ export class URLAlgorithm {
               state = ParserState.SpecialAuthoritySlashes
             } else if (remaining.startsWith("/")) {
               /**
-               * 2.8. Oherwise, if remaining starts with an U+002F (/), set state
+               * 2.8. Otherwise, if remaining starts with an U+002F (/), set state
                * to path or authority state and increase pointer by one.
                */
               state = ParserState.PathOrAuthority

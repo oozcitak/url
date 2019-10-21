@@ -150,6 +150,9 @@ export class URLSearchParamsImpl implements URLSearchParamsInternal {
         }
       }
     }
+    if (!found) {
+      this._list.push([name, value])
+    }
     for (const i of toRemove) {
       this._list.splice(i, 1)
     }
@@ -163,7 +166,7 @@ export class URLSearchParamsImpl implements URLSearchParamsInternal {
      * pairs with equal names must be preserved.
      * 2. Run the update steps.
      */
-    this._list.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    this._list.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
     this._updateSteps()
   }
 
