@@ -226,7 +226,7 @@ export class URLImpl implements URLInternal {
      * 3. Otherwise, basic URL parse the given value with context object’s url
      * as url and port state as state override.
      */
-    if (this._url._cannotBeABaseURLFlag) return
+    if (this._algo.cannotHaveAUsernamePasswordPort(this._url)) return
     if (val === "") {
       this._url.port = null
     } else {
@@ -285,15 +285,15 @@ export class URLImpl implements URLInternal {
      * 6. Set context object’s query object’s list to the result of parsing
      * input.
      */
+    const url = this._url
     if (val === "") {
-      this._url.query = ""
-      this._queryObject._list = []
+      url.query = null
+      this._queryObject._list.length = 0
       return
     }
     if (val.startsWith('?')) val = val.substr(1)
-    this._url.query = ""
-    this._algo.basicURLParser(val, undefined, undefined, this._url, 
-      ParserState.Query)
+    url.query = ""
+    this._algo.basicURLParser(val, undefined, undefined, url, ParserState.Query)
     this._queryObject._list = this._algo.urlEncodedStringParser(val)
   }
 

@@ -37,8 +37,17 @@ export class StringWalker {
    */
   codePoint(): number {
     if (this._codePoint === undefined) {
-      this._codePoint = (this.eof ? 
-        -1 : this._chars[this._pointer].codePointAt(0) || -1)
+      if (this.eof) {
+        this._codePoint = -1
+      } else {
+        const cp = this._chars[this._pointer].codePointAt(0)
+        /* istanbul ignore else */
+        if (cp !== undefined) {
+          this._codePoint = cp
+        } else {
+          this._codePoint = -1
+        }
+      }
     }
     return this._codePoint
   }

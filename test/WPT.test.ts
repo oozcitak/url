@@ -37,3 +37,35 @@ describe('WPT: urltestdata.json', () => {
   }
 
 })
+
+describe('WPT: setters_tests.json', () => {
+
+  const testData = require("./setters_tests.json")
+
+  for (const name in testData) {
+    if (name === "comment") continue
+    const propertyName = name as keyof URL
+    const testCases = testData[propertyName]
+
+    for (const testCase of testCases) {
+      const title = "set " + propertyName + " = `" + testCase["new_value"] + "` of URL(`" + testCase["href"] + "`)"
+
+      test(title, () => {
+        const url = new URL(testCase["href"])
+        _setPropertyOf(url, propertyName, testCase["new_value"])
+        for (const expectedProperty in testCase["expected"]) {
+          expect(_getPropertyOf(url, expectedProperty as keyof URL)).toBe(testCase["expected"][expectedProperty])
+        }
+      })
+    }
+  }
+
+})
+
+const _getPropertyOf = function<T, K extends keyof T>(source: T, key: K) {
+  return source[key]
+}
+
+const _setPropertyOf = function<T, K extends keyof T>(source: T, key: K, val: any) {
+  source[key] = val
+}

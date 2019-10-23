@@ -33,20 +33,20 @@ export class URLAlgorithm {
    * The fragment percent-encode set is the C0 control percent-encode set and 
    * U+0020 SPACE, U+0022 ("), U+003C (<), U+003E (>), and U+0060 (`).
    */
-  protected _fragmentPercentEncodeSet = /[ "<>`]|[\0-\x1F~-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
+  protected _fragmentPercentEncodeSet = /[ "<>`]|[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
   /**
    * The path percent-encode set is the fragment percent-encode set and 
    * U+0023 (#), U+003F (?), U+007B ({), and U+007D (}).
    */
-  protected _pathPercentEncodeSet = /[ "<>`#?{}]|[\0-\x1F~-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
+  protected _pathPercentEncodeSet = /[ "<>`#?{}]|[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
   /**
    * The userinfo percent-encode set is the path percent-encode set and 
    * U+002F (/), U+003A (:), U+003B (;), U+003D (=), U+0040 (@), U+005B ([), 
    * U+005C (\), U+005D (]), U+005E (^), and U+007C (|).
    */
-  protected _userInfoPercentEncodeSet = /[ "<>`#?{}/:;=@\[\]\\\^\|]|[\0-\x1F~-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
+  protected _userInfoPercentEncodeSet = /[ "<>`#?{}/:;=@\[\]\\\^\|]|[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
   /**
    * The URL code points are ASCII alphanumeric, U+0021 (!), U+0024 ($), 
