@@ -19,6 +19,7 @@ describe('WPT: urltestdata.json', () => {
         } else {
           expect(() => new URL(testCase["input"])).toThrow()
         }
+        expect(() => new URL("about:blank", testCase["input"])).toThrow()
       } else {
         const url = ("base" in testCase ? new URL(testCase["input"], testCase["base"]) : new URL(testCase["input"]))
         expect(url.href).toBe(testCase["href"])
