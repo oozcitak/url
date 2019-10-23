@@ -157,3 +157,5 @@ export function utf8Decode(bytes: Uint8Array): string {
   
 	return result
 }
+
+export { StringWalker } from './StringWalker'

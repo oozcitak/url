@@ -32,7 +32,7 @@ export class URLImpl implements URLInternal {
     if (baseURL !== undefined) {
       parsedBase = this._algo.basicURLParser(baseURL)
       if (parsedBase === null) {
-        throw new TypeError("Invalid base URL.")
+        throw new TypeError(`Invalid base URL: '${baseURL}'.`)
       }
     }
 
@@ -44,7 +44,7 @@ export class URLImpl implements URLInternal {
      */
     const parsedURL = this._algo.basicURLParser(url, parsedBase)
     if (parsedURL === null) {
-      throw new TypeError("Invalid URL.")
+      throw new TypeError(`Invalid URL: '${url}'.`)
     }
 
     /**
@@ -78,7 +78,7 @@ export class URLImpl implements URLInternal {
      */
     const parsedURL = this._algo.basicURLParser(value)
     if (parsedURL === null) {
-      throw new TypeError("Invalid URL.")
+      throw new TypeError(`Invalid URL: '${value}'.`)
     }
     /**
      * 3. Set context object’s url to parsedURL.

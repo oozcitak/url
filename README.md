@@ -10,4 +10,4 @@ A Javascript implementation of the [URL Living Standard](https://url.spec.whatwg
 [![Code Coverage](https://img.shields.io/codecov/c/github/oozcitak/url?style=flat-square)](https://codecov.io/gh/oozcitak/url)
 
 # Version
-Current version implements the standard as of commit [5f8576e](https://url.spec.whatwg.org/commit-snapshots/5f8576eeb2004e973db681de3239ae39bcec4cb8/).
+Current version implements the standard as of commit [7ae1c69](https://url.spec.whatwg.org/commit-snapshots/7ae1c691c96f0d82fafa24c33aa1e8df9ffbf2bc/).

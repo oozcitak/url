@@ -1,4 +1,4 @@
-import { isNumber, isArray, utf8Decode, utf8Encode } from './util'
+import { isNumber, isArray, utf8Decode, utf8Encode, StringWalker } from './util'
 import { URLRecordInternal } from './interfacesInternal'
 import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from './interfaces'
 import {
@@ -10,7 +10,7 @@ import { toASCII as idnaToASCII, toUnicode as idnaToUnicode } from '@oozcitak/ut
  * Represents algorithms to manipulate URLs.
  */
 export class URLAlgorithm {
-  protected _validationErrorCallback: ((message: string) => void)
+  protected _validationErrorCallback: ((message: string) => void) | undefined
 
   /**
    * Default ports for a special URL scheme.
@@ -18,7 +18,6 @@ export class URLAlgorithm {
   protected _defaultPorts: { [key: string]: number | null } = {
     "ftp": 21,
     "file": null,
-    "gopher": 70,
     "http": 80,
     "https": 443,
     "ws": 80,
@@ -29,7 +28,7 @@ export class URLAlgorithm {
    * The C0 control percent-encode set are the C0 controls and all code points
    * greater than U+007E (~).
    */
-  protected _c0ControlPercentEncodeSet = /[\0-\x1F~-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
+  protected _c0ControlPercentEncodeSet = /[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
   /**
    * The fragment percent-encode set is the C0 control percent-encode set and 
    * U+0020 SPACE, U+0022 ("), U+003C (<), U+003E (>), and U+0060 (`).
@@ -40,7 +39,7 @@ export class URLAlgorithm {
    * The path percent-encode set is the fragment percent-encode set and 
    * U+0023 (#), U+003F (?), U+007B ({), and U+007D (}).
    */
-  protected _pathPercentEncodeSet = / "<>`#?{}]|[\0-\x1F~-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
+  protected _pathPercentEncodeSet = /[ "<>`#?{}]|[\0-\x1F~-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
   /**
    * The userinfo percent-encode set is the path percent-encode set and 
@@ -63,7 +62,7 @@ export class URLAlgorithm {
    * U+000D CR, U+0020 SPACE, U+0023 (#), U+0025 (%), U+002F (/), U+003A (:), 
    * U+003F (?), U+0040 (@), U+005B ([), U+005C (\), or U+005D (]).
    */
-  protected _forbiddenHostCodePoint = /[\0\t\f\r #%/:?@\[\\\]]/
+  protected _forbiddenHostCodePoint = /[\0\t\f\r #%/:?@\[\\\]]/g
 
   /**
    * Initializes a new `URLAlgorithm`.
@@ -72,11 +71,7 @@ export class URLAlgorithm {
    * validation error occurs
    */
   constructor(validationErrorCallback?: ((message: string) => void)) {
-    if (validationErrorCallback === undefined) {
-      this._validationErrorCallback = ((message: string) => console.log(message))
-    } else {
-      this._validationErrorCallback = validationErrorCallback
-    }
+    this._validationErrorCallback = validationErrorCallback
   }
 
   /**
@@ -85,7 +80,9 @@ export class URLAlgorithm {
    * @param message - error message
    */
   validationError(message: string) {
-    this._validationErrorCallback.call(this, "Validation Error: " + message)
+    if (this._validationErrorCallback !== undefined) {
+      this._validationErrorCallback.call(this, "Validation Error: " + message)
+    }
   } 
 
   /**
@@ -277,7 +274,7 @@ export class URLAlgorithm {
      * 3.3. Set n to floor(n / 256).
      * 4. Return output.
      */
-    let output = ''
+    let output = ""
     let n = address
     for (let i = 1; i <= 4; i++) {
       output = (n % 256).toString() + output
@@ -303,27 +300,25 @@ export class URLAlgorithm {
      * 3. If there is no sequence of address’s IPv6 pieces that are 0 that is
      * longer than 1, then set compress to null.
      */
-    let output = ''
+    let output = ""
     let compress: number | null = null
     let lastIndex = -1
     let count = 0
     let lastCount = 0
     for (let i = 0; i < 8; i++) {
-      if (address[i] === 0) {
-        if (i === 0 || address[i - 1] !== 0) {
-          lastIndex = i
-          count = 1
-        } else {
-          count++
-        }
-      } else if (count !== 0) {
-        if (compress === null || count > 1 && count > lastCount) {
-          lastCount = count
-          compress = lastIndex
-        }
-        count = 0
+      if (address[i] !== 0) continue
+      count = 1
+      for (let j = i + 1; j < 8; j++) {
+        if (address[j] !== 0) break
+        count++
+        continue
+      }
+      if (count > lastCount) {
+        lastCount = count
+        lastIndex = i
       }
     }
+    if (lastCount > 1) compress = lastIndex
 
     /**
      * 4. Let ignore0 be false.
@@ -413,18 +408,21 @@ export class URLAlgorithm {
      */
     if (url === undefined) {
       url = this.newURL()
-      const controlOrSpace = /[\u0000-\u001F\u0020]/
-      if (controlOrSpace.test(input)) {
-        this.validationError("Input string contains control characters or space.")
+      // leading
+      const leadingControlOrSpace = /^[\u0000-\u001F\u0020]+/
+      const trailingControlOrSpace = /[\u0000-\u001F\u0020]+$/
+      if (leadingControlOrSpace.test(input) || trailingControlOrSpace.test(input)) {
+        this.validationError("Input string contains leading or trailing control characters or space.")
       }
-      input = input.replace(controlOrSpace, '')
+      input = input.replace(leadingControlOrSpace, '')
+      input = input.replace(trailingControlOrSpace, '')
     }
 
     /**
      * 2. If input contains any ASCII tab or newline, validation error.
      * 3. Remove all ASCII tab or newline from input.
      */
-    const tabOrNewline = /[\u0009\u000A\u000D]/
+    const tabOrNewline = /[\u0009\u000A\u000D]/g
     if (tabOrNewline.test(input)) {
       this.validationError("Input string contains tab or newline characters.")
     }
@@ -437,7 +435,7 @@ export class URLAlgorithm {
      * 7. If encoding override is given, set encoding to the result of getting 
      * an output encoding from encoding override.
      */
-    let state = stateOverride || ParserState.SchemeStart
+    let state = (stateOverride === undefined ? ParserState.SchemeStart : stateOverride)
     if (baseURL === undefined) baseURL = null
     let encoding = (encodingOverride === undefined ||
       encodingOverride === "replacement" || encodingOverride === "UTF-16BE" ||
@@ -452,9 +450,9 @@ export class URLAlgorithm {
     let atFlag = false
     let arrayFlag = false
     let passwordTokenSeenFlag = false
-    let pointer = 0
 
     const EOF = ""
+    const walker = new StringWalker(input)
 
     /**
      * 11. Keep running the following state machine by switching on state. If
@@ -462,8 +460,6 @@ export class URLAlgorithm {
      * Otherwise, increase pointer by one and continue with the state machine.
      */
     while (true) {
-      const c = (pointer === input.length ? EOF : input[pointer])
-      const remaining = (pointer === input.length ? "" : input.substr(pointer + 1))
 
       switch (state) {
         case ParserState.SchemeStart:
@@ -474,25 +470,27 @@ export class URLAlgorithm {
            * state, and decrease pointer by one.
            * 3. Otherwise, validation error, return failure.
            */
-          if (infraCodePoint.ASCIIAlpha.test(c)) {
-            buffer += c.toLowerCase()
+          if (infraCodePoint.ASCIIAlpha.test(walker.c())) {
+            buffer += walker.c().toLowerCase()
             state = ParserState.Scheme
           } else if (stateOverride === undefined) {
             state = ParserState.NoScheme
-            pointer--
+            walker.pointer--
           } else {
             this.validationError("Invalid scheme start character.")
             return null
           }
           break
+
         case ParserState.Scheme:
           /**
            * 1. If c is an ASCII alphanumeric, U+002B (+), U+002D (-), or U+002E
            * (.), append c, lowercased, to buffer.
            */
-          if (infraCodePoint.ASCIIAlphanumeric.test(c) || c === '+' || c === '-' || c === '.') {
-            buffer += c.toLowerCase()
-          } else if (c === ':') {
+          if (infraCodePoint.ASCIIAlphanumeric.test(walker.c()) || 
+            walker.c() === '+' || walker.c() === '-' || walker.c() === '.') {
+            buffer += walker.c().toLowerCase()
+          } else if (walker.c() === ':') {
             /**
              * 2. Otherwise, if c is U+003A (:), then:
              * 2.1. If state override is given, then:
@@ -538,7 +536,7 @@ export class URLAlgorithm {
                * 2.5.1. If remaining does not start with "//", validation error.
                * 2.5.2. Set state to file state.
                */
-              if (!remaining.startsWith("//")) {
+              if (!walker.remaining().startsWith("//")) {
                 this.validationError("Invalid file URL scheme, '//' expected.")
               }
               state = ParserState.File
@@ -555,13 +553,13 @@ export class URLAlgorithm {
                * authority slashes state.
                */
               state = ParserState.SpecialAuthoritySlashes
-            } else if (remaining.startsWith("/")) {
+            } else if (walker.remaining().startsWith("/")) {
               /**
                * 2.8. Otherwise, if remaining starts with an U+002F (/), set state
                * to path or authority state and increase pointer by one.
                */
               state = ParserState.PathOrAuthority
-              pointer--
+              walker.pointer++
             } else {
               /**
                * 2.9. Otherwise, set url’s cannot-be-a-base-URL flag, append an
@@ -580,7 +578,7 @@ export class URLAlgorithm {
              */
             buffer = ""
             state = ParserState.NoScheme
-            pointer = 0
+            walker.pointer = 0
             continue
           } else {
             /**
@@ -604,10 +602,10 @@ export class URLAlgorithm {
            * relative state and decrease pointer by one.
            * 4. Otherwise, set state to file state and decrease pointer by one.
            */
-          if (baseURL === null || (baseURL._cannotBeABaseURLFlag && c !== '#')) {
+          if (baseURL === null || (baseURL._cannotBeABaseURLFlag && walker.c() !== '#')) {
             this.validationError("Invalid input string.")
             return null
-          } else if (baseURL._cannotBeABaseURLFlag && c === '#') {
+          } else if (baseURL._cannotBeABaseURLFlag && walker.c() === '#') {
             url.scheme = baseURL.scheme
             url.path = infraList.clone(baseURL.path)
             url.query = baseURL.query
@@ -616,10 +614,10 @@ export class URLAlgorithm {
             state = ParserState.Fragment
           } else if (baseURL.scheme !== "file") {
             state = ParserState.Relative
-            pointer--
+            walker.pointer--
           } else {
             state = ParserState.File
-            pointer--
+            walker.pointer--
           }
           break
 
@@ -631,13 +629,13 @@ export class URLAlgorithm {
            * Otherwise, validation error, set state to relative state and 
            * decrease pointer by one.
            */
-          if (c === '/' && remaining.startsWith('/')) {
+          if (walker.c() === '/' && walker.remaining().startsWith('/')) {
             state = ParserState.SpecialAuthorityIgnoreSlashes
-            pointer++
+            walker.pointer++
           } else {
             this.validationError("Invalid input string.")
             state = ParserState.Relative
-            pointer--
+            walker.pointer--
           }
           break
 
@@ -646,11 +644,11 @@ export class URLAlgorithm {
            * If c is U+002F (/), then set state to authority state.
            * Otherwise, set state to path state, and decrease pointer by one.
            */
-          if (c === '/') {
+          if (walker.c() === '/') {
             state = ParserState.Authority
           } else {
             state = ParserState.Path
-            pointer--
+            walker.pointer--
           }
           break
 
@@ -662,8 +660,8 @@ export class URLAlgorithm {
             throw new Error("Invalid parser state. Base URL is null.")
           }
           url.scheme = baseURL.scheme
-          switch (c) {
-            case "": // EOF
+          switch (walker.c()) {
+            case EOF: // EOF
               /**
                * Set url’s username to base’s username, url’s password to base’s
                * password, url’s host to base’s host, url’s port to base’s port,
@@ -726,7 +724,7 @@ export class URLAlgorithm {
                * remove url’s path’s last item, if any.
                * 2. Set state to path state, and decrease pointer by one.
                */
-              if (this.isSpecial(url) && c === '\\') {
+              if (this.isSpecial(url) && walker.c() === '\\') {
                 this.validationError("Invalid input string.")
                 state = ParserState.RelativeSlash
               } else {
@@ -737,7 +735,7 @@ export class URLAlgorithm {
                 url.path = infraList.clone(baseURL.path)
                 if (url.path.length !== 0) url.path.splice(url.path.length - 1, 1)
                 state = ParserState.Path
-                pointer--
+                walker.pointer--
               }
               break
           }
@@ -753,12 +751,12 @@ export class URLAlgorithm {
            * to base’s password, url’s host to base’s host, url’s port to base’s
            * port, state to path state, and then, decrease pointer by one.
            */
-          if (this.isSpecial(url) && (c === '/' || c === '\\')) {
-            if (c === '\\') {
+          if (this.isSpecial(url) && (walker.c() === '/' || walker.c() === '\\')) {
+            if (walker.c() === '\\') {
               this.validationError("Invalid input string.")
             }
             state = ParserState.SpecialAuthorityIgnoreSlashes
-          } else if (c === '/') {
+          } else if (walker.c() === '/') {
             state = ParserState.Authority
           } else {
             if (baseURL === null) {
@@ -769,7 +767,7 @@ export class URLAlgorithm {
             url.host = baseURL.host
             url.port = baseURL.port
             state = ParserState.Path
-            pointer--
+            walker.pointer--
           }
           break
 
@@ -781,13 +779,13 @@ export class URLAlgorithm {
            * Otherwise, validation error, set state to special authority ignore
            * slashes state, and decrease pointer by one.
            */
-          if (c === '/' && remaining.startsWith('/')) {
+          if (walker.c() === '/' && walker.remaining().startsWith('/')) {
             state = ParserState.SpecialAuthorityIgnoreSlashes
-            pointer++
+            walker.pointer++
           } else {
             this.validationError("Expected '//'.")
             state = ParserState.SpecialAuthorityIgnoreSlashes
-            pointer--
+            walker.pointer--
           }
           break
 
@@ -797,9 +795,9 @@ export class URLAlgorithm {
            * authority state and decrease pointer by one.
            * Otherwise, validation error.
            */
-          if (c !== '/' && c !== '\\') {
+          if (walker.c() !== '/' && walker.c() !== '\\') {
             state = ParserState.Authority
-            pointer--
+            walker.pointer--
           } else {
             this.validationError("Unexpected '/' or '\\'.")
           }
@@ -809,7 +807,7 @@ export class URLAlgorithm {
           /**
            * 1. If c is U+0040 (@), then:
            */
-          if (c === '@') {
+          if (walker.c() === '@') {
             /**
              * 1.1. Validation error.
              * 1.2. If the @ flag is set, prepend "%40" to buffer.
@@ -817,7 +815,7 @@ export class URLAlgorithm {
              * 1.4. For each codePoint in buffer:
              */
             this.validationError("Unexpected '@'.")
-            if (atFlag) buffer += '%40'
+            if (atFlag) buffer = '%40' + buffer
             atFlag = true
             for (const codePoint of buffer) {
               /**
@@ -845,8 +843,8 @@ export class URLAlgorithm {
              * 1.5. Set buffer to the empty string.
              */
             buffer = ""
-          } else if (c === EOF || c === '/' || c === '?' || c === '#' ||
-            (this.isSpecial(url) && c === '\\')) {
+          } else if (walker.c() === EOF || walker.c() === '/' || walker.c() === '?' || walker.c() === '#' ||
+            (this.isSpecial(url) && walker.c() === '\\')) {
             /**
              * 2. Otherwise, if one of the following is true
              * - c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
@@ -861,14 +859,14 @@ export class URLAlgorithm {
               this.validationError("Invalid input string.")
               return null
             }
-            pointer -= (buffer.length + 1)
+            walker.pointer -= (buffer.length + 1)
             buffer = ""
             state = ParserState.Host
           } else {
             /**
              * 3. Otherwise, append c to buffer.
              */
-            buffer += c
+            buffer += walker.c()
           }
           break
 
@@ -879,9 +877,9 @@ export class URLAlgorithm {
              * 1. If state override is given and url’s scheme is "file", then
              * decrease pointer by one and set state to file host state.
              */
-            pointer--
+            walker.pointer--
             state = ParserState.FileHost
-          } else if (c === ':' && !arrayFlag) {
+          } else if (walker.c() === ':' && !arrayFlag) {
             /**
              * 2. Otherwise, if c is U+003A (:) and the [] flag is unset, then:
              * 2.1. If buffer is the empty string, validation error, return
@@ -904,8 +902,8 @@ export class URLAlgorithm {
             buffer = ""
             state = ParserState.Port
             if (stateOverride === ParserState.Hostname) return url
-          } else if (c === EOF || c === '/' || c === '?' || c === '#' ||
-            (this.isSpecial(url) && c === '\\')) {
+          } else if (walker.c() === EOF || walker.c() === '/' || walker.c() === '?' || walker.c() === '#' ||
+            (this.isSpecial(url) && walker.c() === '\\')) {
             /**
              * 3. Otherwise, if one of the following is true
              * - c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
@@ -923,7 +921,7 @@ export class URLAlgorithm {
              * state to path start state.
              * 3.6. If state override is given, then return.
              */
-            pointer--
+            walker.pointer--
             if (this.isSpecial(url) && buffer === "") {
               this.validationError("Invalid input string.")
               return null
@@ -937,7 +935,7 @@ export class URLAlgorithm {
             url.host = host
             buffer = ""
             state = ParserState.PathStart
-            if (stateOverride) return url
+            if (stateOverride !== undefined) return url
           } else {
             /**
              * 4. Otherwise:
@@ -945,20 +943,20 @@ export class URLAlgorithm {
              * 4.2. If c is U+005D (]), then unset the [] flag.
              * 4.3. Append c to buffer.
              */
-            if (c === '[') arrayFlag = true
-            if (c === ']') arrayFlag = false
-            buffer += c
+            if (walker.c() === '[') arrayFlag = true
+            if (walker.c() === ']') arrayFlag = false
+            buffer += walker.c()
           }
           break
 
         case ParserState.Port:
-          if (infraCodePoint.ASCIIDigit.test(c)) {
+          if (infraCodePoint.ASCIIDigit.test(walker.c())) {
             /**
              * 1. If c is an ASCII digit, append c to buffer.
              */
-            buffer += c
-          } else if (c === EOF || c === '/' || c === '?' || c === '#' ||
-            (this.isSpecial(url) && c === '\\') || stateOverride) {
+            buffer += walker.c()
+          } else if (walker.c() === EOF || walker.c() === '/' || walker.c() === '?' || walker.c() === '#' ||
+            (this.isSpecial(url) && walker.c() === '\\') || stateOverride) {
             /**
              * 2. Otherwise, if one of the following is true
              * - c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
@@ -992,11 +990,11 @@ export class URLAlgorithm {
              * 2.2. If state override is given, then return.
              * 2.3. Set state to path start state, and decrease pointer by one.
              */
-            if (stateOverride) {
+            if (stateOverride !== undefined) {
               return url
             }
             state = ParserState.PathStart
-            pointer--
+            walker.pointer--
           } else {
             /**
              * 3. Otherwise, validation error, return failure.
@@ -1012,13 +1010,13 @@ export class URLAlgorithm {
            */
           url.scheme = "file"
 
-          if (c === '/' || c === '\\') {
+          if (walker.c() === '/' || walker.c() === '\\') {
             /**
              * 2. If c is U+002F (/) or U+005C (\), then:
              * 2.1. If c is U+005C (\), validation error.
              * 2.2. Set state to file slash state.
              */
-            if (c === '\\') {
+            if (walker.c() === '\\') {
               this.validationError("Invalid input string.")
             }
             state = ParserState.FileSlash
@@ -1027,8 +1025,8 @@ export class URLAlgorithm {
              * 3. Otherwise, if base is non-null and base’s scheme is "file",
              * switch on c:
              */
-            switch (c) {
-              case "": // EOF
+            switch (walker.c()) {
+              case EOF:
                 /**
                  * Set url’s host to base’s host, url’s path to a copy of base’s
                  * path, and url’s query to base’s query.
@@ -1071,15 +1069,15 @@ export class URLAlgorithm {
                  * 2. Otherwise, validation error.
                  * 3. Set state to path state, and decrease pointer by one.
                  */
-                if (!this.startsWithAWindowsDriveLetter(input.substr(pointer))) {
+                if (!this.startsWithAWindowsDriveLetter(walker.substring())) {
                   url.host = baseURL.host
                   url.path = infraList.clone(baseURL.path)
                   this.shorten(url)
                 } else {
                   this.validationError("Unexpected windows drive letter in input string.")
-                  state = ParserState.Path
-                  pointer--
                 }
+                state = ParserState.Path
+                walker.pointer--
                 break
             }
           } else {
@@ -1088,18 +1086,18 @@ export class URLAlgorithm {
              * one.
              */
             state = ParserState.Path
-            pointer--
+            walker.pointer--
           }
           break
 
         case ParserState.FileSlash:
-          if (c === '/' || c === '\\') {
+          if (walker.c() === '/' || walker.c() === '\\') {
             /**
              * 1. If c is U+002F (/) or U+005C (\), then:
              * 1.1. If c is U+005C (\), validation error.
              * 1.2. Set state to file host state.
              */
-            if (c === '\\') {
+            if (walker.c() === '\\') {
               this.validationError("Invalid input string.")
             }
             state = ParserState.FileHost
@@ -1118,7 +1116,7 @@ export class URLAlgorithm {
              * 2.2. Set state to path state, and decrease pointer by one.
              */
             if (baseURL !== null && baseURL.scheme === "file" &&
-              !this.startsWithAWindowsDriveLetter(input.substr(pointer))) {
+              !this.startsWithAWindowsDriveLetter(walker.substring())) {
               if (this.isNormalizedWindowsDriveLetter(baseURL.path[0])) {
                 url.path.push(baseURL.path[0])
               } else {
@@ -1126,19 +1124,20 @@ export class URLAlgorithm {
               }
             }
             state = ParserState.Path
-            pointer--
+            walker.pointer--
           }
           break
 
         case ParserState.FileHost:
-          if (c === '' || c === '/' || c === '\\' || c === '?' || c === '#') {
+          if (walker.c() === EOF || walker.c() === '/' || walker.c() === '\\' ||
+            walker.c() === '?' || walker.c() === '#') {
             /**
              * 1. If c is the EOF code point, U+002F (/), U+005C (\), U+003F (?),
              * or U+0023 (#), then decrease pointer by one and then:
              */
-            pointer--
+            walker.pointer--
 
-            if (!stateOverride && this.isWindowsDriveLetter(buffer)) {
+            if (stateOverride === undefined && this.isWindowsDriveLetter(buffer)) {
               /**
                * 1.1. If state override is not given and buffer is a Windows drive
                * letter, validation error, set state to path state.
@@ -1155,7 +1154,7 @@ export class URLAlgorithm {
                * 1.2.3. Set state to path start state.
                */
               url.host = ""
-              if (stateOverride) return url
+              if (stateOverride !== undefined) return url
               state = ParserState.PathStart
             } else {
               /**
@@ -1174,7 +1173,7 @@ export class URLAlgorithm {
               if (host === null) return null
               if (host === "localhost") host = ""
               url.host = host
-              if (stateOverride) return url
+              if (stateOverride !== undefined) return url
               buffer = ""
               state = ParserState.PathStart
             }
@@ -1182,7 +1181,7 @@ export class URLAlgorithm {
             /**
              * 2. Otherwise, append c to buffer.
              */
-            buffer += c
+            buffer += walker.c()
           }
           break
 
@@ -1195,19 +1194,19 @@ export class URLAlgorithm {
              * 1.3. If c is neither U+002F (/) nor U+005C (\), then decrease 
              * pointer by one.
              */
-            if (c === '\\') {
+            if (walker.c() === '\\') {
               this.validationError("Invalid input string.")
             }
             state = ParserState.Path
-            if (c !== '/' && c !== '\\') pointer--
-          } else if (stateOverride === undefined && c === '?') {
+            if (walker.c() !== '/' && walker.c() !== '\\') walker.pointer--
+          } else if (stateOverride === undefined && walker.c() === '?') {
             /**
              * 2. Otherwise, if state override is not given and c is U+003F (?),
              * set url’s query to the empty string and state to query state.
              */
             url.query = ""
             state = ParserState.Query
-          } else if (stateOverride === undefined && c === '#') {
+          } else if (stateOverride === undefined && walker.c() === '#') {
             /**
              * 3. Otherwise, if state override is not given and c is U+0023 (#),
              * set url’s fragment to the empty string and state to fragment
@@ -1215,20 +1214,21 @@ export class URLAlgorithm {
              */
             url.fragment = ""
             state = ParserState.Fragment
-          } else if (c !== '') {
+          } else if (walker.c() !== EOF) {
             /**
              * 4. Otherwise, if c is not the EOF code point:
              * 4.1. Set state to path state.
              * 4.2. If c is not U+002F (/), then decrease pointer by one.
              */
             state = ParserState.Path
-            if (c !== '/') pointer--
+            if (walker.c() !== '/') walker.pointer--
           }
           break
 
         case ParserState.Path:
-          if ((c === EOF || c === '/') || (this.isSpecial(url) && c === '\\') ||
-            (stateOverride === undefined && (c === '?' || c === '#'))) {
+          if ((walker.c() === EOF || walker.c() === '/') || 
+            (this.isSpecial(url) && walker.c() === '\\') ||
+            (stateOverride === undefined && (walker.c() === '?' || walker.c() === '#'))) {
             /**
              * 1. If one of the following is true
              * - c is the EOF code point or U+002F (/)
@@ -1237,7 +1237,7 @@ export class URLAlgorithm {
              * then:
              */
 
-            if (this.isSpecial(url) && c === '\\') {
+            if (this.isSpecial(url) && walker.c() === '\\') {
               /**
                * 1.1 If url is special and c is U+005C (\), validation error.
                */
@@ -1251,11 +1251,11 @@ export class URLAlgorithm {
                * U+005C (\), append the empty string to url’s path.
                */
               this.shorten(url)
-              if (c !== '/' && !(this.isSpecial(url) && c === '\\')) {
+              if (walker.c() !== '/' && !(this.isSpecial(url) && walker.c() === '\\')) {
                 url.path.push("")
               }
-            } else if (this.isSingleDotPathSegment(buffer) && c !== '/' && 
-              !(this.isSpecial(url) && c === '\\')) {
+            } else if (this.isSingleDotPathSegment(buffer) && walker.c() !== '/' && 
+              !(this.isSpecial(url) && walker.c() === '\\')) {
               /**
                * 1.3. Otherwise, if buffer is a single-dot path segment and if
                * neither c is U+002F (/), nor url is special and c is U+005C (\),
@@ -1280,7 +1280,8 @@ export class URLAlgorithm {
                   this.validationError("Invalid input string.")
                   url.host = ""
                 }
-                buffer = buffer.substr(0, 1) + ':' + buffer.substr(2)
+                const bufferCodePoints = Array.from(buffer)
+                buffer = bufferCodePoints.slice(0, 1) + ':' + bufferCodePoints.slice(2)
               }
               /**
                * 1.4.2. Append buffer to url’s path.
@@ -1297,7 +1298,7 @@ export class URLAlgorithm {
              * greater than 1 and url’s path[0] is the empty string, validation
              * error, remove the first item from url’s path.
              */
-            if (url.scheme === "file" && (c === EOF || c === '?' || c === '#')) {
+            if (url.scheme === "file" && (walker.c() === EOF || walker.c() === '?' || walker.c() === '#')) {
               while (url.path.length > 1 && url.path[0] === "") {
                 this.validationError("Invalid input string.")
                 url.path.splice(0, 1)
@@ -1309,11 +1310,11 @@ export class URLAlgorithm {
              * 1.8. If c is U+0023 (#), then set url’s fragment to the empty
              * string and state to fragment state.
              */
-            if (c === '?') {
+            if (walker.c() === '?') {
               url.query = ""
               state = ParserState.Query
             }
-            if (c === '#') {
+            if (walker.c() === '#') {
               url.fragment = ""
               state = ParserState.Fragment
             }
@@ -1327,13 +1328,13 @@ export class URLAlgorithm {
              * 2.3. UTF-8 percent encode c using the path percent-encode set, 
              * and append the result to buffer.
              */
-            if (!this._urlCodePoints.test(c) && c !== '%') {
+            if (!this._urlCodePoints.test(walker.c()) && walker.c() !== '%') {
               this.validationError("Character is not a URL code point or a percent encoded character.")
             }
-            if (c === '%' && !/^[0-9a-fA-F][0-9a-fA-F]/.test(remaining)) {
+            if (walker.c() === '%' && !/^[0-9a-fA-F][0-9a-fA-F]/.test(walker.remaining())) {
               this.validationError("Percent encoded character must be followed by two hex digits.")
             }
-            buffer += this.utf8PercentEncode(c, this._pathPercentEncodeSet)
+            buffer += this.utf8PercentEncode(walker.c(), this._pathPercentEncodeSet)
           }
           break
 
@@ -1352,21 +1353,21 @@ export class URLAlgorithm {
            * the C0 control percent-encode set, and append the result to url’s
            * path[0].
            */
-          if (c === '?') {
+          if (walker.c() === '?') {
             url.query = ""
             state = ParserState.Query
-          } else if (c === '#') {
+          } else if (walker.c() === '#') {
             url.fragment = ""
             state = ParserState.Fragment
           } else {
-            if (c !== EOF && !this._urlCodePoints.test(c) && c !== '%') {
+            if (walker.c() !== EOF && !this._urlCodePoints.test(walker.c()) && walker.c() !== '%') {
               this.validationError("Character is not a URL code point or a percent encoded character.")
             }
-            if (c === '%' && !/^[0-9a-fA-F][0-9a-fA-F]/.test(remaining)) {
+            if (walker.c() === '%' && !/^[0-9a-fA-F][0-9a-fA-F]/.test(walker.remaining())) {
               this.validationError("Percent encoded character must be followed by two hex digits.")
             }
-            if (c !== EOF) {
-              url.path[0] += this.utf8PercentEncode(c, this._c0ControlPercentEncodeSet)
+            if (walker.c() !== EOF) {
+              url.path[0] += this.utf8PercentEncode(walker.c(), this._c0ControlPercentEncodeSet)
             }
           }
           break
@@ -1383,27 +1384,27 @@ export class URLAlgorithm {
             encoding = "UTF-8"
           }
 
-          if (stateOverride === undefined && c === '#') {
+          if (stateOverride === undefined && walker.c() === '#') {
             /**
              * 2. If state override is not given and c is U+0023 (#), then set
              * url’s fragment to the empty string and state to fragment state.
              */
             url.fragment = ""
             state = ParserState.Fragment
-          } else if (c !== EOF) {
+          } else if (walker.c() !== EOF) {
             /**
              * 3. Otherwise, if c is not the EOF code point:
              * 3.1. If c is not a URL code point and not U+0025 (%), validation
              * error.
              */
-            if (!this._urlCodePoints.test(c) && c !== '%') {
+            if (!this._urlCodePoints.test(walker.c()) && walker.c() !== '%') {
               this.validationError("Character is not a URL code point or a percent encoded character.")
             }
             /**
              * 3.2. If c is U+0025 (%) and remaining does not start with two
              * ASCII hex digits, validation error.
              */
-            if (c === '%' && !/^[0-9a-fA-F][0-9a-fA-F]/.test(remaining)) {
+            if (walker.c() === '%' && !/^[0-9a-fA-F][0-9a-fA-F]/.test(walker.remaining())) {
               this.validationError("Percent encoded character must be followed by two hex digits.")
             }
             /**
@@ -1412,7 +1413,7 @@ export class URLAlgorithm {
             if (encoding.toUpperCase() !== "UTF-8") {
               throw new Error("Only UTF-8 encoding is supported.")
             }        
-            let bytes = utf8Encode(c)
+            let bytes = utf8Encode(walker.c())
             /**
              * 3.4. If bytes starts with `&#` and ends with 0x3B (;), then:
              */
@@ -1467,27 +1468,27 @@ export class URLAlgorithm {
            * 3. UTF-8 percent encode c using the fragment percent-encode set and
            * append the result to url’s fragment.
            */
-          if (c === EOF) {
+          if (walker.c() === EOF) {
             //
-          } else if (c === "\u0000") {
+          } else if (walker.c() === "\u0000") {
             this.validationError("NULL character in input string.")
           } else {
-            if (!this._urlCodePoints.test(c) && c !== '%') {
+            if (!this._urlCodePoints.test(walker.c()) && walker.c() !== '%') {
               this.validationError("Unexpected character in fragment string.")
             }
-            if (c === '%' && !/^[A-Za-z0-9][A-Za-z0-9]/.test(remaining)) {
+            if (walker.c() === '%' && !/^[A-Za-z0-9][A-Za-z0-9]/.test(walker.remaining())) {
               this.validationError("Unexpected character in fragment string.")
             }
-            url.fragment += this.utf8PercentEncode(c, this._fragmentPercentEncodeSet)
+            url.fragment += this.utf8PercentEncode(walker.c(), this._fragmentPercentEncodeSet)
           }
           break
     
       }
 
-      if (pointer === input.length) 
+      if (walker.eof) 
         break
       else
-        pointer++
+        walker.pointer++
     }
 
     /**
@@ -1618,7 +1619,8 @@ export class URLAlgorithm {
      * U+003F (?), or U+0023 (#).
      */
     return str.length >= 2 && this.isWindowsDriveLetter(str) &&
-      (str.length === 2 || (str[2] === '/' || str[2] === '\\' || str[2] === '#'))
+      (str.length === 2 || (str[2] === '/' || str[2] === '\\' || 
+      str[2] === '?' || str[2] === '#'))
   }
 
   /**
@@ -1799,7 +1801,7 @@ export class URLAlgorithm {
         if (i < numbers.length - 1) return null
       }
     }
-    if (numbers[numbers.length - 1] > Math.pow(256, 5 - numbers.length)) {
+    if (numbers[numbers.length - 1] >= Math.pow(256, 5 - numbers.length)) {
       this.validationError("Invalid IP v4 address.")
       return null
     }
@@ -1840,12 +1842,11 @@ export class URLAlgorithm {
      * 4. Let pointer be a pointer into input, initially 0 (pointing to the 
      * first code point).
      */
+    const EOF = ""
     const address = [0, 0, 0, 0, 0, 0, 0, 0]
     let pieceIndex = 0
     let compress: number | null = null
-    let pointer = 0
-    let c = input[0]
-    let remaining = input.substr(1)
+    const walker = new StringWalker(input)
     /**
      * 5. If c is U+003A (:), then:
      * 5.1. If remaining does not start with U+003A (:), validation error, 
@@ -1853,12 +1854,12 @@ export class URLAlgorithm {
      * 5.2. Increase pointer by 2.
      * 5.3. Increase pieceIndex by 1 and then set compress to pieceIndex.
      */
-    if (c === ':') {
-      if (!remaining.startsWith(':')) {
+    if (walker.c() === ':') {
+      if (!walker.remaining().startsWith(':')) {
         this.validationError("Invalid IP v6 address.")
         return null
       }
-      pointer += 2
+      walker.pointer += 2
       pieceIndex += 1
       compress = pieceIndex
     }
@@ -1866,10 +1867,7 @@ export class URLAlgorithm {
     /**
      * 6. While c is not the EOF code point:
      */
-    const EOF = ""
-    while (c !== EOF) {
-
-      let c = input[pointer]
+    while (walker.c() !== EOF) {
 
       /**
        * 6.1. If pieceIndex is 8, validation error, return failure.
@@ -1884,13 +1882,12 @@ export class URLAlgorithm {
        * 6.2.2. Increase pointer and pieceIndex by 1, set compress to pieceIndex, 
        * and then continue.
        */
-      if (c === ':') {
+      if (walker.c() === ':') {
         if (compress !== null) {
           this.validationError("Invalid IP v6 address.")
           return null
         }
-        pointer++
-        c = input[pointer]
+        walker.pointer++
         pieceIndex++
         compress = pieceIndex
         continue
@@ -1903,16 +1900,15 @@ export class URLAlgorithm {
        */
       let value = 0
       let length = 0
-      while (length < 4 && infraCodePoint.ASCIIHexDigit.test(c)) {
-        value = value * 0x10 + parseInt(c, 16)
-        pointer++
-        c = input[pointer]
+      while (length < 4 && infraCodePoint.ASCIIHexDigit.test(walker.c())) {
+        value = value * 0x10 + parseInt(walker.c(), 16)
+        walker.pointer++
         length++
       }
       /**
        * 6.5. If c is U+002E (.), then:
        */
-      if (c === '.') {
+      if (walker.c() === '.') {
         /**
          * 6.5.1. If length is 0, validation error, return failure.
          * 6.5.2. Decrease pointer by length.
@@ -1924,8 +1920,7 @@ export class URLAlgorithm {
           this.validationError("Invalid IP v6 address.")
           return null
         }
-        pointer -= length
-        c = input[pointer]
+        walker.pointer -= length
         if (pieceIndex > 6) {
           this.validationError("Invalid IP v6 address.")
           return null
@@ -1934,7 +1929,7 @@ export class URLAlgorithm {
         /**
          * 6.5.5. While c is not the EOF code point:
          */
-        while (c !== EOF) {
+        while (walker.c() !== EOF) {
           /**
            * 6.5.5.1. Let ipv4Piece be null.
            */
@@ -1946,9 +1941,8 @@ export class URLAlgorithm {
            * 6.5.5.2.1. Otherwise, validation error, return failure.
            */
           if (numbersSeen > 0) {
-            if (c === '.' && numbersSeen < 4) {
-              pointer++
-              c = input[pointer]
+            if (walker.c() === '.' && numbersSeen < 4) {
+              walker.pointer++
             } else {
               this.validationError("Invalid IP v6 address.")
               return null
@@ -1958,25 +1952,25 @@ export class URLAlgorithm {
            * 6.5.5.3. If c is not an ASCII digit, validation error, return
            * failure.
            */
-          if (!infraCodePoint.ASCIIDigit.test(c)) {
+          if (!infraCodePoint.ASCIIDigit.test(walker.c())) {
             this.validationError("Invalid IP v6 address.")
             return null
           }
           /**
            * 6.5.5.4. While c is an ASCII digit:
            */
-          while (infraCodePoint.ASCIIDigit.test(c)) {
+          while (infraCodePoint.ASCIIDigit.test(walker.c())) {
             /**
              * 6.5.5.4.1. Let number be c interpreted as decimal number.
              */
-            const number = parseInt(c)
+            const number = parseInt(walker.c(), 10)
             /**
              * 6.5.5.4.2. If ipv4Piece is null, then set ipv4Piece to number.
              * Otherwise, if ipv4Piece is 0, validation error, return failure.
              * Otherwise, set ipv4Piece to ipv4Piece × 10 + number.
              */
             if (ipv4Piece === null) {
-              ipv4Piece = numbersSeen
+              ipv4Piece = number
             } else if (ipv4Piece === 0) {
               this.validationError("Invalid IP v6 address.")
               return null
@@ -1991,8 +1985,7 @@ export class URLAlgorithm {
               this.validationError("Invalid IP v6 address.")
               return null
             }
-            pointer++
-            c = input[pointer]
+            walker.pointer++
           }
           /**
            * 6.5.5.5. Set address[pieceIndex] to address[pieceIndex] × 0x100 + ipv4Piece.
@@ -2018,19 +2011,18 @@ export class URLAlgorithm {
          * 6.5.7. Break.
          */
         break
-      } else if (c === ':') {
+      } else if (walker.c() === ':') {
         /**
          * 6.6. Otherwise, if c is U+003A (:):
          * 6.6.1. Increase pointer by 1.
          * 6.6.2. If c is the EOF code point, validation error, return failure.
          */
-        pointer++
-        c = input[pointer]
-        if (c === EOF) {
+        walker.pointer++
+        if (walker.c() === EOF) {
           this.validationError("Invalid IP v6 address.")
           return null
         }
-      } else if (c !== EOF) {
+      } else if (walker.c() !== EOF) {
         /**
          * 6.7. Otherwise, if c is not the EOF code point, validation error, 
          * return failure.
@@ -2446,7 +2438,6 @@ export class URLAlgorithm {
      * 3. Return a new opaque origin, if url is failure, and url’s origin
      * otherwise.
      * "ftp"
-     * "gopher"
      * "http"
      * "https"
      * "ws"
@@ -2470,12 +2461,11 @@ export class URLAlgorithm {
         else
           return this.origin(parsedURL)
       case "ftp":
-      case "gopher":
       case "http":
       case "https":
       case "ws":
       case "wss":
-        return [url.scheme, url.host || "", url.port, null]
+        return [url.scheme, url.host === null ? "" : url.host, url.port, null]
       case "file":
         return OpaqueOrigin
       default:

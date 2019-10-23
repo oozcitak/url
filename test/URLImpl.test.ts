@@ -1,6 +1,6 @@
-import { URL, algorithm } from '../src'
+import { URL } from '../src'
 
-describe('URLImpl', () => {
+describe('URL', () => {
 
   test('constructor', () => {
     let url: URL
