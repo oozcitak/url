@@ -1,4 +1,4 @@
-import * as util from '../../src/util'
+import { util } from '../../src'
 
 describe('util', () => {
 

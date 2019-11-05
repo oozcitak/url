@@ -1,4 +1,4 @@
-import { URLAlgorithm } from "./URLAlgorithm"
+import { URLAlgorithm } from "../algorithm/URLAlgorithm"
 import { URLSearchParamsImpl } from "./URLSearchParamsImpl"
 import { URL, URLRecord, ParserState, URLSearchParams } from "./interfaces"
 

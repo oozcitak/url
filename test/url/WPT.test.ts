@@ -1,12 +1,11 @@
-import { URL } from '../src'
-import { isObject } from '../src/util'
+import { URL, util } from '../../src'
 
 describe('WPT: urltestdata.json', () => {
 
   const testData = require("./urltestdata.json")
 
   for (const testCase of testData) {
-    if (!isObject(testCase)) continue
+    if (!util.isObject(testCase)) continue
 
     let title = testCase["failure"] ? "FAIL - " : "PASS - "
     title += "input: `" + testCase["input"] + "`"

@@ -1,6 +1,7 @@
-import * as Interfaces from './interfaces'
-export { Interfaces }
+import * as util from "./util"
+export { util }
 
-export { URLAlgorithm } from './URLAlgorithm'
-export { URLImpl as URL } from './URLImpl'
-export { URLSearchParamsImpl as URLSearchParams } from './URLSearchParamsImpl'
+import * as algorithm from "./algorithm"
+export { algorithm }
+
+export { URL, URLSearchParams, Interfaces } from "./url"

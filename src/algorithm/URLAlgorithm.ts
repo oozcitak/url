@@ -1,5 +1,5 @@
-import { isNumber, isArray, utf8Decode, utf8Encode, StringWalker } from './util'
-import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from './interfaces'
+import { isNumber, isArray, utf8Decode, utf8Encode, StringWalker } from '../util'
+import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from '../url/interfaces'
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
 } from '@oozcitak/infra'

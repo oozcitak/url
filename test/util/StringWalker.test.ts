@@ -1,7 +1,9 @@
-import { StringWalker } from '../../src/util'
+import { util } from '../../src'
 
 describe('StringWalker', () => {
 
+  const StringWalker = util.StringWalker
+  
   test('constructor', () => {
     const walker = new StringWalker("input")
     expect(walker.length).toBe(5)
