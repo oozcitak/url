@@ -1,15 +1,14 @@
-import { URLInternal, URLRecordInternal, URLSearchParamsInternal } from "./interfacesInternal"
 import { URLAlgorithm } from "./URLAlgorithm"
 import { URLSearchParamsImpl } from "./URLSearchParamsImpl"
-import { ParserState, URLSearchParams } from "./interfaces"
+import { URL, URLRecord, ParserState, URLSearchParams } from "./interfaces"
 
 /**
  * Represents an URL.
  */
-export class URLImpl implements URLInternal {
+export class URLImpl implements URL {
 
-  _url: URLRecordInternal
-  _queryObject: URLSearchParamsInternal
+  _url: URLRecord
+  _queryObject: URLSearchParams
 
   protected _algo: URLAlgorithm
 
@@ -28,7 +27,7 @@ export class URLImpl implements URLInternal {
      * 2.1. Let parsedBase be the result of running the basic URL parser on base.
      * 2.2. If parsedBase is failure, then throw a TypeError.
      */
-    let parsedBase: URLRecordInternal | null = null
+    let parsedBase: URLRecord | null = null
     if (baseURL !== undefined) {
       parsedBase = this._algo.basicURLParser(baseURL)
       if (parsedBase === null) {

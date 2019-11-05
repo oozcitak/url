@@ -1,5 +1,4 @@
 import { isNumber, isArray, utf8Decode, utf8Encode, StringWalker } from './util'
-import { URLRecordInternal } from './interfacesInternal'
 import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from './interfaces'
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
@@ -88,7 +87,7 @@ export class URLAlgorithm {
   /**
    * Creates a new URL.
    */
-  newURL(): URLRecordInternal {
+  newURL(): URLRecord {
     return {
       scheme: '',
       username: '',
@@ -117,7 +116,7 @@ export class URLAlgorithm {
    * 
    * @param url - an URL
    */
-  isSpecial(url: URLRecordInternal): boolean {
+  isSpecial(url: URLRecord): boolean {
     return this.isSpecialScheme(url.scheme)
   }
 
@@ -135,7 +134,7 @@ export class URLAlgorithm {
    * 
    * @param url - an URL
    */
-  includesCredentials(url: URLRecordInternal): boolean {
+  includesCredentials(url: URLRecord): boolean {
     return url.username !== '' || url.password !== ''
   }
 
@@ -144,7 +143,7 @@ export class URLAlgorithm {
    * 
    * @param url - an URL
    */
-  cannotHaveAUsernamePasswordPort(url: URLRecordInternal): boolean {
+  cannotHaveAUsernamePasswordPort(url: URLRecord): boolean {
     /**
      * A URL cannot have a username/password/port if its host is null or the
      * empty string, its cannot-be-a-base-URL flag is set, or its scheme is
@@ -159,7 +158,7 @@ export class URLAlgorithm {
    * 
    * @param url - an URL
    */
-  urlSerializer(url: URLRecordInternal, excludeFragmentFlag: boolean = false): string {
+  urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = false): string {
     /**
      * 1. Let output be url’s scheme and U+003A (:) concatenated.
      */
@@ -366,8 +365,8 @@ export class URLAlgorithm {
    * @param baseURL - base URL
    * @param encodingOverride - encoding override
    */
-  urlParser(input: string, baseURL?: URLRecordInternal, 
-    encodingOverride?: string): URLRecordInternal | null {
+  urlParser(input: string, baseURL?: URLRecord, 
+    encodingOverride?: string): URLRecord | null {
     /**
      * 1. Let url be the result of running the basic URL parser on input with
      * base, and encoding override as provided.
@@ -396,9 +395,9 @@ export class URLAlgorithm {
    * @param baseURL - base URL
    * @param encodingOverride - encoding override
    */
-  basicURLParser(input: string, baseURL?: URLRecordInternal | null,
-    encodingOverride?: string, url?: URLRecordInternal,
-    stateOverride?: ParserState): URLRecordInternal | null {
+  basicURLParser(input: string, baseURL?: URLRecord | null,
+    encodingOverride?: string, url?: URLRecord,
+    stateOverride?: ParserState): URLRecord | null {
     /**
      * 1. If url is not given:
      * 1.1. Set url to a new URL.
@@ -1504,7 +1503,7 @@ export class URLAlgorithm {
    * @param url - a URL
    * @param username - username string
    */
-  setTheUsername(url: URLRecordInternal, username: string) {
+  setTheUsername(url: URLRecord, username: string) {
     /**
      * 1. Set url’s username to the empty string.
      * 2. For each code point in username, UTF-8 percent encode it using the 
@@ -1523,7 +1522,7 @@ export class URLAlgorithm {
    * @param url - a URL
    * @param username - password string
    */
-  setThePassword(url: URLRecordInternal, password: string) {
+  setThePassword(url: URLRecord, password: string) {
     /**
      * 1. Set url’s password to the empty string.
      * 2. For each code point in password, UTF-8 percent encode it using the 
@@ -1561,7 +1560,7 @@ export class URLAlgorithm {
    * 
    * @param url - an URL
    */
-  shorten(url: URLRecordInternal): void {
+  shorten(url: URLRecord): void {
     /**
      * 1. Let path be url’s path.
      * 2. If path is empty, then return.
@@ -2222,7 +2221,7 @@ export class URLAlgorithm {
    * @param urlB - a URL
    * @param excludeFragmentsFlag - whether to ignore fragments while comparing
    */
-  urlEquals(urlA: URLRecordInternal, urlB: URLRecordInternal,
+  urlEquals(urlA: URLRecord, urlB: URLRecord,
     excludeFragmentsFlag = false): boolean {
     /**
      * 1. Let serializedA be the result of serializing A, with the exclude 
@@ -2427,7 +2426,7 @@ export class URLAlgorithm {
    * 
    * @param url - a URL
    */
-  origin(url: URLRecordInternal): Origin {
+  origin(url: URLRecord): Origin {
     /**
      * A URL’s origin is the origin returned by running these steps, switching 
      * on URL’s scheme:

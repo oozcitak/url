@@ -54,6 +54,9 @@ export interface URL {
    * Returns the serialization of url.
    */
   toJSON(): string
+
+  _url: URLRecord
+  _queryObject: URLSearchParams
 }
 
 /**
@@ -91,7 +94,10 @@ export interface URLRecord {
   /**
    * Fragment
    */
-  fragment: string | null  
+  fragment: string | null
+
+  _cannotBeABaseURLFlag: boolean
+  _blobURLEntry: any | null
 }
 
 /**
@@ -144,6 +150,9 @@ export interface URLSearchParams extends Iterable<[string, string]> {
    * Converts query parameters to a string.
    */
   toString(): string
+
+  _list: [string, string][]
+  _urlObject: URL | null
 }
 
 /**

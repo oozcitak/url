@@ -1,14 +1,14 @@
-import { URLSearchParamsInternal, URLInternal } from "./interfacesInternal"
+import { URLSearchParams, URL } from "./interfaces"
 import { URLAlgorithm } from "./URLAlgorithm"
 import { isArray, isObject } from "./util"
 
 /**
  * Represents URL query parameters.
  */
-export class URLSearchParamsImpl implements URLSearchParamsInternal {
+export class URLSearchParamsImpl implements URLSearchParams {
 
   _list: [string, string][] = []
-  _urlObject: URLInternal | null = null
+  _urlObject: URL | null = null
 
   protected _algo: URLAlgorithm
   

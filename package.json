@@ -48,7 +48,8 @@
     ]
   },
   "scripts": {
-    "test": "tsc && jest --coverage",
+    "compile": "tsc",
+    "test": "npm run compile && jest --coverage",
     "publish-public": "npm run test && npm publish --access public"
   }
 }
