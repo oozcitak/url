@@ -2156,7 +2156,7 @@ export class URLAlgorithm {
       } else if (byte === 0x25 && i >= input.length - 2) {
         output[n] = byte
         n++
-      } else if (byte === 0x25 && !isHexDigit(input[i + 1]) && !isHexDigit(input[i + 2])) {
+      } else if (byte === 0x25 && (!isHexDigit(input[i + 1]) || !isHexDigit(input[i + 2]))) {
         output[n] = byte
         n++
       } else {
