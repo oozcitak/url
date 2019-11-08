@@ -1,4 +1,4 @@
-import { URL } from '../../src'
+import { URL } from "../../src"
 
 describe('URL', () => {
 

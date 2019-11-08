@@ -1,1 +1,1 @@
-export { URLAlgorithm } from './URLAlgorithm'
+export { URLAlgorithm } from "./URLAlgorithm"

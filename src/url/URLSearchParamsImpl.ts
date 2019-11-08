@@ -1,6 +1,6 @@
 import { URLSearchParams, URL } from "./interfaces"
 import { URLAlgorithm } from "../algorithm/URLAlgorithm"
-import { isArray, isObject } from "../util"
+import { isArray, isObject } from "@oozcitak/util"
 
 /**
  * Represents URL query parameters.

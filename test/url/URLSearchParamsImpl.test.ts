@@ -1,4 +1,4 @@
-import { URL, URLSearchParams } from '../../src'
+import { URL, URLSearchParams } from "../../src"
 
 describe('URLSearchParams', () => {
 

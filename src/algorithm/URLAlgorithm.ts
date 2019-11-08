@@ -1,9 +1,9 @@
-import { isNumber, isArray, utf8Decode, utf8Encode, StringWalker } from '../util'
-import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from '../url/interfaces'
+import { isNumber, isArray, utf8Decode, utf8Encode, StringWalker } from "@oozcitak/util"
+import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from "../url/interfaces"
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
-} from '@oozcitak/infra'
-import { toASCII as idnaToASCII, toUnicode as idnaToUnicode } from '@oozcitak/uts46'
+} from "@oozcitak/infra"
+import { toASCII as idnaToASCII, toUnicode as idnaToUnicode } from "@oozcitak/uts46"
 
 /**
  * Represents algorithms to manipulate URLs.
