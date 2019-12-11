@@ -1,4 +1,4 @@
-import { URLAlgorithm } from '../../src'
+import { URLAlgorithm } from '../../src/algorithm'
 
 describe('URLAlgorithm', () => {
 

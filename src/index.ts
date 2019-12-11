@@ -1,2 +1,1 @@
-export { URL, URLSearchParams, Interfaces } from "./url"
-export { URLAlgorithm } from "./algorithm"
+export { URL, URLSearchParams } from "./url"
