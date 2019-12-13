@@ -1,6 +1,6 @@
-import { URLAlgorithm } from "../algorithm/URLAlgorithm"
 import { URLSearchParamsImpl } from "./URLSearchParamsImpl"
 import { URL, URLRecord, ParserState, URLSearchParams } from "./interfaces"
+import { basicURLParser, urlSerializer, urlEncodedStringParser, asciiSerializationOfAnOrigin, origin, cannotHaveAUsernamePasswordPort, setTheUsername, setThePassword, hostSerializer } from "./URLAlgorithm"
 
 /**
  * Represents an URL.
@@ -10,8 +10,6 @@ export class URLImpl implements URL {
   _url: URLRecord
   _queryObject: URLSearchParams
 
-  protected _algo: URLAlgorithm
-
   /** 
    * Initializes a new `URL`.
    * 
@@ -19,8 +17,6 @@ export class URLImpl implements URL {
    * @param base - a base URL string
    */
   constructor(url: string, baseURL?: string) {
-    this._algo = new URLAlgorithm()
-
     /**
      * 1. Let parsedBase be null.
      * 2. If base is given, then:
@@ -29,7 +25,7 @@ export class URLImpl implements URL {
      */
     let parsedBase: URLRecord | null = null
     if (baseURL !== undefined) {
-      parsedBase = this._algo.basicURLParser(baseURL)
+      parsedBase = basicURLParser(baseURL)
       if (parsedBase === null) {
         throw new TypeError(`Invalid base URL: '${baseURL}'.`)
       }
@@ -40,7 +36,7 @@ export class URLImpl implements URL {
      * with parsedBase.
      * 4. If parsedURL is failure, then throw a TypeError.
      */
-    const parsedURL = this._algo.basicURLParser(url, parsedBase)
+    const parsedURL = basicURLParser(url, parsedBase)
     if (parsedURL === null) {
       throw new TypeError(`Invalid URL: '${url}'.`)
     }
@@ -66,7 +62,7 @@ export class URLImpl implements URL {
      * The href attribute’s getter and the toJSON() method, when invoked, must 
      * return the serialization of context object’s url.
      */
-    return this._algo.urlSerializer(this._url) 
+    return urlSerializer(this._url) 
   }
   set href(value: string) {
     /**
@@ -74,7 +70,7 @@ export class URLImpl implements URL {
      * given value.
      * 2. If parsedURL is failure, then throw a TypeError.
      */
-    const parsedURL = this._algo.basicURLParser(value)
+    const parsedURL = basicURLParser(value)
     if (parsedURL === null) {
       throw new TypeError(`Invalid URL: '${value}'.`)
     }
@@ -89,7 +85,7 @@ export class URLImpl implements URL {
     this._queryObject._list = []
     const query = this._url.query
     if (query !== null) {
-      this._queryObject._list = this._algo.urlEncodedStringParser(query)
+      this._queryObject._list = urlEncodedStringParser(query)
     }
   }
 
@@ -99,7 +95,7 @@ export class URLImpl implements URL {
      * The origin attribute’s getter must return the serialization of context
      * object’s url’s origin. [HTML]
      */
-    return this._algo.asciiSerializationOfAnOrigin(this._algo.origin(this._url))
+    return asciiSerializationOfAnOrigin(origin(this._url))
   }
 
   /** @inheritdoc */
@@ -116,7 +112,7 @@ export class URLImpl implements URL {
      * followed by U+003A (:), with context object’s url as url and scheme start
      * state as state override.
      */
-    this._algo.basicURLParser(val + ':', undefined, undefined, this._url, 
+    basicURLParser(val + ':', undefined, undefined, this._url, 
       ParserState.SchemeStart)
   }
 
@@ -134,8 +130,8 @@ export class URLImpl implements URL {
      * return.
      * 2. Set the username given context object’s url and the given value.
      */
-    if (this._algo.cannotHaveAUsernamePasswordPort(this._url)) return
-    this._algo.setTheUsername(this._url, val)
+    if (cannotHaveAUsernamePasswordPort(this._url)) return
+    setTheUsername(this._url, val)
   }
 
   /** @inheritdoc */
@@ -152,8 +148,8 @@ export class URLImpl implements URL {
      * return.
      * 2. Set the password given context object’s url and the given value.
      */
-    if (this._algo.cannotHaveAUsernamePasswordPort(this._url)) return
-    this._algo.setThePassword(this._url, val)
+    if (cannotHaveAUsernamePasswordPort(this._url)) return
+    setThePassword(this._url, val)
   }
 
   /** @inheritdoc */
@@ -168,9 +164,9 @@ export class URLImpl implements URL {
     if (this._url.host === null) {
       return ""
     } else if (this._url.port === null) {
-      return this._algo.hostSerializer(this._url.host)
+      return hostSerializer(this._url.host)
     } else {
-      return this._algo.hostSerializer(this._url.host) + ':' + this._url.port.toString()
+      return hostSerializer(this._url.host) + ':' + this._url.port.toString()
     }
   }
   set host(val: string) {
@@ -181,7 +177,7 @@ export class URLImpl implements URL {
      * host state as state override.
      */
     if (this._url._cannotBeABaseURLFlag) return
-    this._algo.basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url, 
       ParserState.Host)
   }
 
@@ -192,7 +188,7 @@ export class URLImpl implements URL {
      * 2. Return context object’s url’s host, serialized.
      */
     if (this._url.host === null) return ""
-    return this._algo.hostSerializer(this._url.host)
+    return hostSerializer(this._url.host)
   }
   set hostname(val: string) {
     /**
@@ -202,7 +198,7 @@ export class URLImpl implements URL {
      * hostname state as state override.
      */
     if (this._url._cannotBeABaseURLFlag) return
-    this._algo.basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url, 
       ParserState.Hostname)
   }
 
@@ -224,11 +220,11 @@ export class URLImpl implements URL {
      * 3. Otherwise, basic URL parse the given value with context object’s url
      * as url and port state as state override.
      */
-    if (this._algo.cannotHaveAUsernamePasswordPort(this._url)) return
+    if (cannotHaveAUsernamePasswordPort(this._url)) return
     if (val === "") {
       this._url.port = null
     } else {
-      this._algo.basicURLParser(val, undefined, undefined, this._url, 
+      basicURLParser(val, undefined, undefined, this._url, 
         ParserState.Port)
     }
   }
@@ -256,7 +252,7 @@ export class URLImpl implements URL {
      */
     if (this._url._cannotBeABaseURLFlag) return
     this._url.path = []
-    this._algo.basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url, 
       ParserState.PathStart)
   }
 
@@ -291,8 +287,8 @@ export class URLImpl implements URL {
     }
     if (val.startsWith('?')) val = val.substr(1)
     url.query = ""
-    this._algo.basicURLParser(val, undefined, undefined, url, ParserState.Query)
-    this._queryObject._list = this._algo.urlEncodedStringParser(val)
+    basicURLParser(val, undefined, undefined, url, ParserState.Query)
+    this._queryObject._list = urlEncodedStringParser(val)
   }
 
   /** @inheritdoc */
@@ -324,13 +320,13 @@ export class URLImpl implements URL {
     }
     if (val.startsWith('#')) val = val.substr(1)
     this._url.fragment = ""
-    this._algo.basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url, 
       ParserState.Fragment)
   }
   
 
   /** @inheritdoc */
-  toJSON(): string { return this._algo.urlSerializer(this._url) }
+  toJSON(): string { return urlSerializer(this._url) }
 
   /** @inheritdoc */
   toString(): string {

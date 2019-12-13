@@ -1,11 +1,11 @@
-import { URLAlgorithm } from '../../src/algorithm'
+import { setValidationErrorCallback, basicURLParser } from '../../src/URLAlgorithm'
 
 describe('URLAlgorithm', () => {
 
-  test('constructor', () => {
+  test('setValidationErrorCallback', () => {
     const messages: string[] = []
-    const algo = new URLAlgorithm((message) => messages.push(message))
-    algo.basicURLParser("https://username:password@example.org")
+    setValidationErrorCallback((message) => messages.push(message))
+    basicURLParser("https://username:password@example.org")
     expect(messages.length).toBe(1)
   })
 

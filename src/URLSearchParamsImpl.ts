@@ -1,6 +1,6 @@
 import { URLSearchParams, URL } from "./interfaces"
-import { URLAlgorithm } from "../algorithm/URLAlgorithm"
 import { isArray, isObject } from "@oozcitak/util"
+import { urlEncodedStringParser, urlEncodedSerializer } from "./URLAlgorithm"
 
 /**
  * Represents URL query parameters.
@@ -10,16 +10,12 @@ export class URLSearchParamsImpl implements URLSearchParams {
   _list: [string, string][] = []
   _urlObject: URL | null = null
 
-  protected _algo: URLAlgorithm
-  
   /** 
    * Initializes a new `URLSearchParams`.
    * 
    * @param init - initial values of query parameters
    */
   constructor(init: string[][] | { [key: string]: string } | string = "") {
-    this._algo = new URLAlgorithm()
-
     /**
      * 1. Let query be a new URLSearchParams object.
      * 2. If init is a sequence, then for each pair in init:
@@ -48,7 +44,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
         }
       }      
     } else {
-      this._list = this._algo.urlEncodedStringParser(init)
+      this._list = urlEncodedStringParser(init)
     }
   }
 
@@ -61,7 +57,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
      * 2. If query is the empty string, then set query to null.
      * 3. Set url object’s url’s query to query.
      */
-    let query: string | null = this._algo.urlEncodedSerializer(this._list)
+    let query: string | null = urlEncodedSerializer(this._list)
     if (query === "") query = null
     if (this._urlObject !== null) this._urlObject._url.query = query
   }
@@ -183,7 +179,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
 
   /** @inheritdoc */
   toString(): string {
-    return this._algo.urlEncodedSerializer(this._list)
+    return urlEncodedSerializer(this._list)
   }
 
 }
