@@ -11,3 +11,17 @@ A Javascript implementation of the [URL Living Standard](https://url.spec.whatwg
 
 # Version
 Current version implements the standard as of commit [7ae1c69](https://url.spec.whatwg.org/commit-snapshots/7ae1c691c96f0d82fafa24c33aa1e8df9ffbf2bc/).
+
+# Installation
+```
+npm install @oozcitak/url
+```
+
+# Usage
+Create an instance of the `URL` or `URLSearchParams` classes.
+
+```js
+const { URL } = require("@oozcitak/url");
+
+const url = new URL("https://example.org/file.aspx")
+```
