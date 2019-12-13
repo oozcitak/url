@@ -4,7 +4,7 @@ import { isObject } from "@oozcitak/util"
 describe('WPT: urltestdata.json', () => {
 
   const testData = require("./urltestdata.json")
-
+  
   for (const testCase of testData) {
     if (!isObject(testCase)) continue
 

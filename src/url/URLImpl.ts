@@ -35,7 +35,6 @@ export class URLImpl implements URL {
       }
     }
 
-
     /**
      * 3. Let parsedURL be the result of running the basic URL parser on url 
      * with parsedBase.
