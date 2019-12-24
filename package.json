@@ -20,15 +20,14 @@
   "main": "./lib/index",
   "types": "lib/index.d.ts",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.0"
   },
   "files": [
     "lib/**/*"
   ],
   "dependencies": {
     "@oozcitak/util": "1.0.2",
-    "@oozcitak/infra": "1.0.3",
-    "@oozcitak/uts46": "0.0.8"
+    "@oozcitak/infra": "1.0.3"
   },
   "devDependencies": {
     "typescript": "*",

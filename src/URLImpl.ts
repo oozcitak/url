@@ -1,6 +1,10 @@
 import { URLSearchParamsImpl } from "./URLSearchParamsImpl"
 import { URL, URLRecord, ParserState, URLSearchParams } from "./interfaces"
-import { basicURLParser, urlSerializer, urlEncodedStringParser, asciiSerializationOfAnOrigin, origin, cannotHaveAUsernamePasswordPort, setTheUsername, setThePassword, hostSerializer } from "./URLAlgorithm"
+import { 
+  basicURLParser, urlSerializer, urlEncodedStringParser, 
+  asciiSerializationOfAnOrigin, origin, cannotHaveAUsernamePasswordPort, 
+  setTheUsername, setThePassword, hostSerializer
+} from "./URLAlgorithm"
 
 /**
  * Represents an URL.

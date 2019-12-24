@@ -3,7 +3,7 @@ import { URLRecord, ParserState, Host, Origin, OpaqueOrigin } from "./interfaces
 import {
   codePoint as infraCodePoint, list as infraList, byteSequence as infraByteSequence
 } from "@oozcitak/infra"
-import { toASCII as idnaToASCII, toUnicode as idnaToUnicode } from "@oozcitak/uts46"
+import { domainToASCII as nodeDomainToASCII, domainToUnicode as nodeDomainToUnicode } from "url"
 
 let _validationErrorCallback: ((message: string) => void) | undefined
 
@@ -2485,10 +2485,9 @@ export function domainToASCII(domain: string, beStrict = false): string | null {
    * 3. If result is a failure value, validation error, return failure.
    * 4. Return result.
    */
-  const result = idnaToASCII(domain, { useSTD3ASCIIRules: beStrict,
-    checkHyphens: false, checkBidi: true, checkJoiners: true,
-    transitionalProcessing: false, verifyDnsLength: beStrict })
-  if (result === null) {
+  // Use node.js function
+  const result = nodeDomainToASCII(domain)
+  if (result === "") {
     validationError("Invalid domain name.")
     return null
   }
@@ -2509,11 +2508,9 @@ export function domainToUnicode(domain: string, beStrict = false): string {
    * 2. Signify validation errors for any returned errors, and then, 
    * return result.
    */
-  const output = { errors: false }
-  const result = idnaToUnicode(domain, { checkHyphens: false, checkBidi: true, 
-    checkJoiners: true, useSTD3ASCIIRules: false, 
-    transitionalProcessing: false }, output)
-  if (output.errors) {
+  // Use node.js function
+  const result = nodeDomainToUnicode(domain)
+  if (result === "") {
     validationError("Invalid domain name.")
   }
   return result
