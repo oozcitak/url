@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es5",
         "module": "commonjs",
         "declaration": true,
         "lib": [
-            "es6"
+            "es5"
         ],
+        "downlevelIteration": true,
         "locale": "en",
         "strict": true,
         "newLine": "lf",
