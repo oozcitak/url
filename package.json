@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "@oozcitak/util": "8.3.7",
-    "@oozcitak/infra": "1.0.6"
+    "@oozcitak/infra": "1.0.7"
   },
   "devDependencies": {
     "typescript": "*",
