@@ -26,8 +26,8 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@oozcitak/util": "8.3.7",
-    "@oozcitak/infra": "1.0.7"
+    "@oozcitak/util": "8.3.8",
+    "@oozcitak/infra": "1.0.8"
   },
   "devDependencies": {
     "typescript": "*",
