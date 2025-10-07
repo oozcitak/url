@@ -1,10 +1,12 @@
-import { URL } from "../../src"
+import { suite, test } from 'node:test'
+import { deepEqual, throws } from 'node:assert'
+import { URL } from "../../lib"
 import { isObject } from "@oozcitak/util"
 
-describe('WPT: urltestdata.json', () => {
+suite('WPT: urltestdata.json', () => {
 
   const testData = require("./urltestdata.json")
-  
+
   for (const testCase of testData) {
     if (!isObject(testCase)) continue
 
@@ -15,31 +17,31 @@ describe('WPT: urltestdata.json', () => {
     test(title, () => {
       if (testCase["failure"]) {
         if ("base" in testCase) {
-          expect(() => new URL(testCase["input"], testCase["base"])).toThrow()
+          throws(() => new URL(testCase["input"], testCase["base"]))
         } else {
-          expect(() => new URL(testCase["input"])).toThrow()
+          throws(() => new URL(testCase["input"]))
         }
-        expect(() => new URL("about:blank", testCase["input"])).toThrow()
+        throws(() => new URL("about:blank", testCase["input"]))
       } else {
-        const url = ("base" in testCase ? new URL(testCase["input"], testCase["base"]) : new URL(testCase["input"]))
-        expect(url.href).toBe(testCase["href"])
-        if ("origin" in testCase) expect(url.origin).toBe(testCase["origin"])
-        expect(url.protocol).toBe(testCase["protocol"])
-        expect(url.username).toBe(testCase["username"])
-        expect(url.password).toBe(testCase["password"])
-        expect(url.host).toBe(testCase["host"])
-        expect(url.hostname).toBe(testCase["hostname"])
-        expect(url.port).toBe(testCase["port"])
-        expect(url.pathname).toBe(testCase["pathname"])
-        expect(url.search).toBe(testCase["search"])
-        expect(url.hash).toBe(testCase["hash"])
+        const url = ("base" in testCase ? new URL(testCase["input"], testCase["base"]) : new URL(testCase["input"], undefined))
+        deepEqual(url.href, testCase["href"])
+        if ("origin" in testCase) deepEqual(url.origin, testCase["origin"])
+        deepEqual(url.protocol, testCase["protocol"])
+        deepEqual(url.username, testCase["username"])
+        deepEqual(url.password, testCase["password"])
+        deepEqual(url.host, testCase["host"])
+        deepEqual(url.hostname, testCase["hostname"])
+        deepEqual(url.port, testCase["port"])
+        deepEqual(url.pathname, testCase["pathname"])
+        deepEqual(url.search, testCase["search"])
+        deepEqual(url.hash, testCase["hash"])
       }
     })
   }
 
 })
 
-describe('WPT: setters_tests.json', () => {
+suite('WPT: setters_tests.json', () => {
 
   const testData = require("./setters_tests.json")
 
@@ -55,7 +57,7 @@ describe('WPT: setters_tests.json', () => {
         const url = new URL(testCase["href"])
         _setPropertyOf(url, propertyName, testCase["new_value"])
         for (const expectedProperty in testCase["expected"]) {
-          expect(_getPropertyOf(url, expectedProperty as keyof URL)).toBe(testCase["expected"][expectedProperty])
+          deepEqual(_getPropertyOf(url, expectedProperty as keyof URL), testCase["expected"][expectedProperty])
         }
       })
     }
