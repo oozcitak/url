@@ -1,153 +1,155 @@
-import { URL } from "../../src"
+import { suite, test } from 'node:test'
+import { deepEqual, throws } from 'node:assert'
+import { URL } from "../../lib"
 
-describe('URL', () => {
+suite('URL', () => {
 
   test('constructor', () => {
     let url: URL
     url = new URL("https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
-    expect(url.href).toBe("https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org/")
-    expect(url.href).toBe("https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url = new URL("/path/to/file.aspx", "https://example.org/")
-    expect(url.href).toBe("https://example.org/path/to/file.aspx")
-    expect(() => new URL("/path/to/file.aspx", "invalid url")).toThrow()
-    expect(() => new URL("invalid url")).toThrow()
+    deepEqual(url.href, "https://example.org/path/to/file.aspx")
+    throws(() => new URL("/path/to/file.aspx", "invalid url"))
+    throws(() => new URL("invalid url"))
   })
 
   test('href', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org/")
-    expect(url.href).toBe("https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.href = "https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag"
-    expect(url.href).toBe("https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.href = "https://example.org/path/to/file.aspx"
-    expect(url.href).toBe("https://example.org/path/to/file.aspx")
-    expect(() => url.href = "invalid url").toThrow()
+    deepEqual(url.href, "https://example.org/path/to/file.aspx")
+    throws(() => url.href = "invalid url")
   })
 
   test('origin', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.origin).toBe("https://example.org:8080")
+    deepEqual(url.origin, "https://example.org:8080")
   })
 
   test('protocol', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org/")
-    expect(url.protocol).toBe("https:")
+    deepEqual(url.protocol, "https:")
     url.protocol = "ftp:"
-    expect(url.href).toBe("ftp://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "ftp://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
   })
 
   test('username', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org/")
-    expect(url.username).toBe("username")
+    deepEqual(url.username, "username")
     url.username = "somebody"
-    expect(url.href).toBe("https://somebody:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://somebody:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.href = "file://file.html"
     url.username = "val"
-    expect(url.username).toBe("")
+    deepEqual(url.username, "")
   })
-  
+
   test('password', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org/")
-    expect(url.password).toBe("password")
+    deepEqual(url.password, "password")
     url.password = "secret"
-    expect(url.href).toBe("https://username:secret@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:secret@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.href = "file://file.html"
     url.password = "val"
-    expect(url.password).toBe("")
+    deepEqual(url.password, "")
   })
 
   test('host', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.host).toBe("example.org:8080")
+    deepEqual(url.host, "example.org:8080")
     url.host = "ample.gov"
-    expect(url.href).toBe("https://username:password@ample.gov:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@ample.gov:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.href = "http://example.org"
-    expect(url.host).toBe("example.org")
+    deepEqual(url.host, "example.org")
 
     const mailUrl = new URL("mailto:person@example.org")
-    expect(mailUrl.host).toBe("")
+    deepEqual(mailUrl.host, "")
     mailUrl.host = "example.org"
-    expect(mailUrl.host).toBe("")
+    deepEqual(mailUrl.host, "")
   })
 
   test('hostname', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.hostname).toBe("example.org")
+    deepEqual(url.hostname, "example.org")
     url.hostname = "ample.gov"
-    expect(url.href).toBe("https://username:password@ample.gov:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@ample.gov:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
 
     const mailUrl = new URL("mailto:person@example.org")
-    expect(mailUrl.hostname).toBe("")
+    deepEqual(mailUrl.hostname, "")
     mailUrl.hostname = "example.org"
-    expect(mailUrl.hostname).toBe("")
+    deepEqual(mailUrl.hostname, "")
   })
 
   test('port', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.port).toBe("8080")
+    deepEqual(url.port, "8080")
     url.port = "8081"
-    expect(url.href).toBe("https://username:password@example.org:8081/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org:8081/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.port = ""
-    expect(url.href).toBe("https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org/path/to/file.aspx?key1=value1&key2=value2#frag")
     url.href = "http://example.org"
-    expect(url.port).toBe("")
+    deepEqual(url.port, "")
 
     const mailUrl = new URL("mailto:person@example.org")
-    expect(mailUrl.port).toBe("")
+    deepEqual(mailUrl.port, "")
     mailUrl.port = "8080"
-    expect(mailUrl.port).toBe("")
+    deepEqual(mailUrl.port, "")
   })
 
   test('pathname', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.pathname).toBe("/path/to/file.aspx")
+    deepEqual(url.pathname, "/path/to/file.aspx")
     url.pathname = "/root/404.html"
-    expect(url.href).toBe("https://username:password@example.org:8080/root/404.html?key1=value1&key2=value2#frag")
+    deepEqual(url.href, "https://username:password@example.org:8080/root/404.html?key1=value1&key2=value2#frag")
     url.href = "http://example.org"
-    expect(url.pathname).toBe("/")
+    deepEqual(url.pathname, "/")
 
     const mailUrl = new URL("mailto:person@example.org")
-    expect(mailUrl.pathname).toBe("person@example.org")
+    deepEqual(mailUrl.pathname, "person@example.org")
     mailUrl.pathname = "/path/to/file.aspx"
-    expect(mailUrl.pathname).toBe("person@example.org")
+    deepEqual(mailUrl.pathname, "person@example.org")
   })
 
   test('search', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.search).toBe("?key1=value1&key2=value2")
+    deepEqual(url.search, "?key1=value1&key2=value2")
     url.search = "?k3=v3&k4=v4"
-    expect(url.href).toBe("https://username:password@example.org:8080/path/to/file.aspx?k3=v3&k4=v4#frag")
+    deepEqual(url.href, "https://username:password@example.org:8080/path/to/file.aspx?k3=v3&k4=v4#frag")
     url.search = "k3=v3&k4=v4"
-    expect(url.search).toBe("?k3=v3&k4=v4")
+    deepEqual(url.search, "?k3=v3&k4=v4")
     url.search = ""
-    expect(url.search).toBe("")
+    deepEqual(url.search, "")
   })
 
   test('searchParams', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.searchParams.toString()).toBe("key1=value1&key2=value2")
+    deepEqual(url.searchParams.toString(), "key1=value1&key2=value2")
   })
 
   test('hash', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.hash).toBe("#frag")
+    deepEqual(url.hash, "#frag")
     url.hash = "#fragment"
     url.href = "http://example.org"
-    expect(url.hash).toBe("")
+    deepEqual(url.hash, "")
     url.hash = "fragment"
-    expect(url.hash).toBe("#fragment")
+    deepEqual(url.hash, "#fragment")
     url.hash = ""
-    expect(url.hash).toBe("")
+    deepEqual(url.hash, "")
   })
 
   test('toJSON()', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.toJSON()).toBe("https://username:password@example.org:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.toJSON(), "https://username:password@example.org:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
   })
 
   test('toString()', () => {
     const url = new URL("/path/to/file.aspx?key1=value1&key2=value2#frag", "https://username:password@example.org:8080/")
-    expect(url.toString()).toBe("https://username:password@example.org:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
+    deepEqual(url.toString(), "https://username:password@example.org:8080/path/to/file.aspx?key1=value1&key2=value2#frag")
   })
 
 })

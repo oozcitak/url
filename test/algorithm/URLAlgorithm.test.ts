@@ -1,12 +1,14 @@
-import { setValidationErrorCallback, basicURLParser } from '../../src/URLAlgorithm'
+import { suite, test } from 'node:test'
+import { deepEqual } from 'node:assert'
+import { setValidationErrorCallback, basicURLParser } from '../../lib/URLAlgorithm'
 
-describe('URLAlgorithm', () => {
+suite('URLAlgorithm', () => {
 
   test('setValidationErrorCallback', () => {
     const messages: string[] = []
     setValidationErrorCallback((message) => messages.push(message))
     basicURLParser("https://username:password@example.org")
-    expect(messages.length).toBe(1)
+    deepEqual(messages.length, 1)
   })
 
 })

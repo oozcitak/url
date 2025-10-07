@@ -1,9 +1,9 @@
 import { URLSearchParamsImpl } from "./URLSearchParamsImpl"
 import { URL, URLRecord, ParserState, URLSearchParams } from "./interfaces"
-import { 
-  basicURLParser, urlSerializer, urlEncodedStringParser, 
-  asciiSerializationOfAnOrigin, origin, cannotHaveAUsernamePasswordPort, 
-  setTheUsername, setThePassword, hostSerializer
+import {
+  basicURLParser, urlSerializer, urlEncodedStringParser,
+  asciiSerializationOfAnOrigin, origin, cannotHaveAUsernamePasswordPort,
+  setTheUsername, setThePassword, hostSerializer, setValidationErrorCallback
 } from "./URLAlgorithm"
 
 /**
@@ -14,9 +14,9 @@ export class URLImpl implements URL {
   _url: URLRecord
   _queryObject: URLSearchParams
 
-  /** 
+  /**
    * Initializes a new `URL`.
-   * 
+   *
    * @param url - an URL string
    * @param base - a base URL string
    */
@@ -36,7 +36,7 @@ export class URLImpl implements URL {
     }
 
     /**
-     * 3. Let parsedURL be the result of running the basic URL parser on url 
+     * 3. Let parsedURL be the result of running the basic URL parser on url
      * with parsedBase.
      * 4. If parsedURL is failure, then throw a TypeError.
      */
@@ -63,10 +63,10 @@ export class URLImpl implements URL {
   /** @inheritdoc */
   get href(): string {
     /**
-     * The href attribute’s getter and the toJSON() method, when invoked, must 
+     * The href attribute’s getter and the toJSON() method, when invoked, must
      * return the serialization of context object’s url.
      */
-    return urlSerializer(this._url) 
+    return urlSerializer(this._url)
   }
   set href(value: string) {
     /**
@@ -112,25 +112,25 @@ export class URLImpl implements URL {
   }
   set protocol(val: string) {
     /**
-     * The protocol attribute’s setter must basic URL parse the given value, 
+     * The protocol attribute’s setter must basic URL parse the given value,
      * followed by U+003A (:), with context object’s url as url and scheme start
      * state as state override.
      */
-    basicURLParser(val + ':', undefined, undefined, this._url, 
+    basicURLParser(val + ':', undefined, undefined, this._url,
       ParserState.SchemeStart)
   }
 
   /** @inheritdoc */
   get username(): string {
     /**
-     * The username attribute’s getter must return context object’s url’s 
+     * The username attribute’s getter must return context object’s url’s
      * username.
      */
     return this._url.username
   }
   set username(val: string) {
     /**
-     * 1. If context object’s url cannot have a username/password/port, then 
+     * 1. If context object’s url cannot have a username/password/port, then
      * return.
      * 2. Set the username given context object’s url and the given value.
      */
@@ -141,14 +141,14 @@ export class URLImpl implements URL {
   /** @inheritdoc */
   get password(): string {
     /**
-     * The password attribute’s getter must return context object’s url’s 
+     * The password attribute’s getter must return context object’s url’s
      * password.
      */
     return this._url.password
   }
   set password(val: string) {
     /**
-     * 1. If context object’s url cannot have a username/password/port, then 
+     * 1. If context object’s url cannot have a username/password/port, then
      * return.
      * 2. Set the password given context object’s url and the given value.
      */
@@ -162,7 +162,7 @@ export class URLImpl implements URL {
      * 1. Let url be context object’s url.
      * 2. If url’s host is null, return the empty string.
      * 3. If url’s port is null, return url’s host, serialized.
-     * 4. Return url’s host, serialized, followed by U+003A (:) and url’s port, 
+     * 4. Return url’s host, serialized, followed by U+003A (:) and url’s port,
      * serialized.
      */
     if (this._url.host === null) {
@@ -181,7 +181,7 @@ export class URLImpl implements URL {
      * host state as state override.
      */
     if (this._url._cannotBeABaseURLFlag) return
-    basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url,
       ParserState.Host)
   }
 
@@ -202,7 +202,7 @@ export class URLImpl implements URL {
      * hostname state as state override.
      */
     if (this._url._cannotBeABaseURLFlag) return
-    basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url,
       ParserState.Hostname)
   }
 
@@ -217,7 +217,7 @@ export class URLImpl implements URL {
   }
   set port(val: string) {
     /**
-     * 1. If context object’s url cannot have a username/password/port, then 
+     * 1. If context object’s url cannot have a username/password/port, then
      * return.
      * 2. If the given value is the empty string, then set context object’s
      * url’s port to null.
@@ -228,7 +228,7 @@ export class URLImpl implements URL {
     if (val === "") {
       this._url.port = null
     } else {
-      basicURLParser(val, undefined, undefined, this._url, 
+      basicURLParser(val, undefined, undefined, this._url,
         ParserState.Port)
     }
   }
@@ -236,10 +236,10 @@ export class URLImpl implements URL {
   /** @inheritdoc */
   get pathname(): string {
     /**
-     * 1. If context object’s url’s cannot-be-a-base-URL flag is set, then 
+     * 1. If context object’s url’s cannot-be-a-base-URL flag is set, then
      * return context object’s url’s path[0].
      * 2. If context object’s url’s path is empty, then return the empty string.
-     * 3. Return U+002F (/), followed by the strings in context object’s url’s 
+     * 3. Return U+002F (/), followed by the strings in context object’s url’s
      * path (including empty strings), if any, separated from each other by
      * U+002F (/).
      */
@@ -256,14 +256,14 @@ export class URLImpl implements URL {
      */
     if (this._url._cannotBeABaseURLFlag) return
     this._url.path = []
-    basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url,
       ParserState.PathStart)
   }
 
   /** @inheritdoc */
   get search(): string {
     /**
-     * 1. If context object’s url’s query is either null or the empty string, 
+     * 1. If context object’s url’s query is either null or the empty string,
      * return the empty string.
      * 2. Return U+003F (?), followed by context object’s url’s query.
      */
@@ -301,7 +301,7 @@ export class URLImpl implements URL {
   /** @inheritdoc */
   get hash(): string {
     /**
-     * 1. If context object’s url’s fragment is either null or the empty string, 
+     * 1. If context object’s url’s fragment is either null or the empty string,
      * return the empty string.
      * 2. Return U+0023 (#), followed by context object’s url’s fragment.
      */
@@ -324,10 +324,10 @@ export class URLImpl implements URL {
     }
     if (val.startsWith('#')) val = val.substr(1)
     this._url.fragment = ""
-    basicURLParser(val, undefined, undefined, this._url, 
+    basicURLParser(val, undefined, undefined, this._url,
       ParserState.Fragment)
   }
-  
+
 
   /** @inheritdoc */
   toJSON(): string { return urlSerializer(this._url) }

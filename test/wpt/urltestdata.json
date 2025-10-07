@@ -3849,17 +3849,7 @@
   {
     "input": "http://0..0x300/",
     "base": "about:blank",
-    "href": "http://0..0x300/",
-    "origin": "http://0..0x300",
-    "protocol": "http:",
-    "username": "",
-    "password": "",
-    "host": "0..0x300",
-    "hostname": "0..0x300",
-    "port": "",
-    "pathname": "/",
-    "search": "",
-    "hash": ""
+    "failure": true
   },
   "Broken IPv6",
   {
@@ -5073,17 +5063,7 @@
   {
     "input": "http://256.256.256.256.256",
     "base": "http://other.com/",
-    "href": "http://256.256.256.256.256/",
-    "origin": "http://256.256.256.256.256",
-    "protocol": "http:",
-    "username": "",
-    "password": "",
-    "host": "256.256.256.256.256",
-    "hostname": "256.256.256.256.256",
-    "port": "",
-    "pathname": "/",
-    "search": "",
-    "hash": ""
+    "failure": true
   },
   {
     "input": "https://0x.0x.0",
@@ -6383,16 +6363,7 @@
   {
     "input": "http://0177.0.0.0189",
     "base": "about:blank",
-    "href": "http://0177.0.0.0189/",
-    "protocol": "http:",
-    "username": "",
-    "password": "",
-    "host": "0177.0.0.0189",
-    "hostname": "0177.0.0.0189",
-    "port": "",
-    "pathname": "/",
-    "search": "",
-    "hash": ""
+    "failure": true
   },
   {
     "input": "http://0x7f.0.0.0x7g",

@@ -1,6 +1,6 @@
 {
   "name": "@oozcitak/url",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "keywords": [
     "url",
     "whatwg"
@@ -20,36 +20,23 @@
   "main": "./lib/index",
   "types": "lib/index.d.ts",
   "engines": {
-    "node": ">=8.0"
+    "node": ">=20.0"
   },
   "files": [
     "lib/**/*"
   ],
   "dependencies": {
-    "@oozcitak/util": "8.3.8",
-    "@oozcitak/infra": "1.0.8"
+    "@oozcitak/util": "^9.0.1",
+    "@oozcitak/infra": "^2.0.0"
   },
   "devDependencies": {
-    "@types/jest": "*",
-    "@types/node": "*",
-    "coveralls": "*",
-    "jest": "*",
-    "ts-jest": "^26.3.0",
-    "typescript": "*"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "/test/.*\\.test\\.tsx?$",
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}"
-    ]
+    "@types/node": "^20.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   },
   "scripts": {
-    "compile": "rm -rf ./lib && tsc --version && tsc",
-    "test": "npm run compile && jest --coverage",
-    "publish-public": "npm run test && npm publish --access public"
+    "test": "tsc && tsx --test --experimental-test-coverage test/**/*test.ts",
+    "cover": "tsc && tsx --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=./coverage/lcov.info test/*test.ts",
+    "publish-public": "tsc && npm run cover && npm publish --access public"
   }
 }
