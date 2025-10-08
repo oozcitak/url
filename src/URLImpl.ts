@@ -61,7 +61,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get href(): string {
+  get href() {
     /**
      * The href attribute’s getter and the toJSON() method, when invoked, must
      * return the serialization of context object’s url.
@@ -103,7 +103,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get protocol(): string {
+  get protocol() {
     /**
      * The protocol attribute’s getter must return context object url’s scheme,
      * followed by U+003A (:).
@@ -121,7 +121,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get username(): string {
+  get username() {
     /**
      * The username attribute’s getter must return context object’s url’s
      * username.
@@ -139,7 +139,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get password(): string {
+  get password() {
     /**
      * The password attribute’s getter must return context object’s url’s
      * password.
@@ -157,7 +157,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get host(): string {
+  get host() {
     /**
      * 1. Let url be context object’s url.
      * 2. If url’s host is null, return the empty string.
@@ -186,7 +186,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get hostname(): string {
+  get hostname() {
     /**
      * 1. If context object’s url’s host is null, return the empty string.
      * 2. Return context object’s url’s host, serialized.
@@ -207,7 +207,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get port(): string {
+  get port() {
     /**
      * 1. If context object’s url’s port is null, return the empty string.
      * 2. Return context object’s url’s port, serialized.
@@ -234,7 +234,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get pathname(): string {
+  get pathname() {
     /**
      * 1. If context object’s url’s cannot-be-a-base-URL flag is set, then
      * return context object’s url’s path[0].
@@ -261,7 +261,7 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get search(): string {
+  get search() {
     /**
      * 1. If context object’s url’s query is either null or the empty string,
      * return the empty string.
@@ -296,10 +296,10 @@ export class URLImpl implements URL {
   }
 
   /** @inheritdoc */
-  get searchParams(): URLSearchParams { return this._queryObject }
+  get searchParams() { return this._queryObject }
 
   /** @inheritdoc */
-  get hash(): string {
+  get hash() {
     /**
      * 1. If context object’s url’s fragment is either null or the empty string,
      * return the empty string.
@@ -330,10 +330,10 @@ export class URLImpl implements URL {
 
 
   /** @inheritdoc */
-  toJSON(): string { return urlSerializer(this._url) }
+  toJSON() { return urlSerializer(this._url) }
 
   /** @inheritdoc */
-  toString(): string {
+  toString() {
     return this.href
   }
 
