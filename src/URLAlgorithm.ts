@@ -16,7 +16,7 @@ const _defaultPorts: { [key: string]: number | null } = {
   "http": 80,
   "https": 443,
   "ws": 80,
-  "wss": 443    
+  "wss": 443
 }
 
 /**
@@ -26,44 +26,44 @@ const _defaultPorts: { [key: string]: number | null } = {
 const _c0ControlPercentEncodeSet = /[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /**
- * The fragment percent-encode set is the C0 control percent-encode set and 
+ * The fragment percent-encode set is the C0 control percent-encode set and
  * U+0020 SPACE, U+0022 ("), U+003C (<), U+003E (>), and U+0060 (`).
  */
 const _fragmentPercentEncodeSet = /[ "<>`]|[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /**
- * The path percent-encode set is the fragment percent-encode set and 
+ * The path percent-encode set is the fragment percent-encode set and
  * U+0023 (#), U+003F (?), U+007B ({), and U+007D (}).
  */
 const _pathPercentEncodeSet = /[ "<>`#?{}]|[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /**
- * The userinfo percent-encode set is the path percent-encode set and 
- * U+002F (/), U+003A (:), U+003B (;), U+003D (=), U+0040 (@), U+005B ([), 
+ * The userinfo percent-encode set is the path percent-encode set and
+ * U+002F (/), U+003A (:), U+003B (;), U+003D (=), U+0040 (@), U+005B ([),
  * U+005C (\), U+005D (]), U+005E (^), and U+007C (|).
  */
 const _userInfoPercentEncodeSet = /[ "<>`#?{}/:;=@\[\]\\\^\|]|[\0-\x1F\x7F-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /**
- * The URL code points are ASCII alphanumeric, U+0021 (!), U+0024 ($), 
- * U+0026 (&), U+0027 ('), U+0028 LEFT PARENTHESIS, U+0029 RIGHT PARENTHESIS, 
- * U+002A (*), U+002B (+), U+002C (,), U+002D (-), U+002E (.), U+002F (/), 
- * U+003A (:), U+003B (;), U+003D (=), U+003F (?), U+0040 (@), U+005F (_), 
- * U+007E (~), and code points in the range U+00A0 to U+10FFFD, inclusive, 
+ * The URL code points are ASCII alphanumeric, U+0021 (!), U+0024 ($),
+ * U+0026 (&), U+0027 ('), U+0028 LEFT PARENTHESIS, U+0029 RIGHT PARENTHESIS,
+ * U+002A (*), U+002B (+), U+002C (,), U+002D (-), U+002E (.), U+002F (/),
+ * U+003A (:), U+003B (;), U+003D (=), U+003F (?), U+0040 (@), U+005F (_),
+ * U+007E (~), and code points in the range U+00A0 to U+10FFFD, inclusive,
  * excluding surrogates and noncharacters.
  */
 const _urlCodePoints = /[0-9A-Za-z!\$&-\/:;=\?@_~\xA0-\uD7FF\uE000-\uFDCF\uFDF0-\uFFFD]|[\uD800-\uD83E\uD840-\uD87E\uD880-\uD8BE\uD8C0-\uD8FE\uD900-\uD93E\uD940-\uD97E\uD980-\uD9BE\uD9C0-\uD9FE\uDA00-\uDA3E\uDA40-\uDA7E\uDA80-\uDABE\uDAC0-\uDAFE\uDB00-\uDB3E\uDB40-\uDB7E\uDB80-\uDBBE\uDBC0-\uDBFE][\uDC00-\uDFFF]|[\uD83F\uD87F\uD8BF\uD8FF\uD93F\uD97F\uD9BF\uD9FF\uDA3F\uDA7F\uDABF\uDAFF\uDB3F\uDB7F\uDBBF\uDBFF][\uDC00-\uDFFD]/
 
 /**
- * A forbidden host code point is U+0000 NULL, U+0009 TAB, U+000A LF, 
- * U+000D CR, U+0020 SPACE, U+0023 (#), U+0025 (%), U+002F (/), U+003A (:), 
+ * A forbidden host code point is U+0000 NULL, U+0009 TAB, U+000A LF,
+ * U+000D CR, U+0020 SPACE, U+0023 (#), U+0025 (%), U+002F (/), U+003A (:),
  * U+003F (?), U+0040 (@), U+005B ([), U+005C (\), or U+005D (]).
  */
 const _forbiddenHostCodePoint = /[\0\t\f\r #%/:?@\[\\\]]/
 
 /**
  * Sets the callback function for validation errors.
- * 
+ *
  * @param validationErrorCallback - a callback function to be called when a
  * validation error occurs
  */
@@ -73,14 +73,14 @@ export function setValidationErrorCallback(validationErrorCallback?: ((message: 
 
 /**
  * Generates a validation error.
- * 
+ *
  * @param message - error message
  */
 function validationError(message: string) {
   if (_validationErrorCallback !== undefined) {
     _validationErrorCallback.call(null, "Validation Error: " + message)
   }
-} 
+}
 
 /**
  * Creates a new URL.
@@ -102,46 +102,46 @@ export function newURL(): URLRecord {
 
 /**
  * Determines if the scheme is a special scheme.
- * 
+ *
  * @param scheme - a scheme
  */
-export function isSpecialScheme(scheme: string): boolean {
+export function isSpecialScheme(scheme: string) {
   return (scheme in _defaultPorts)
 }
 
 /**
  * Determines if the URL has a special scheme.
- * 
+ *
  * @param url - an URL
  */
-export function isSpecial(url: URLRecord): boolean {
+export function isSpecial(url: URLRecord) {
   return isSpecialScheme(url.scheme)
 }
 
 /**
  * Returns the default port for a special scheme.
- * 
+ *
  * @param scheme - a scheme
  */
-export function defaultPort(scheme: string): number | null {
+export function defaultPort(scheme: string) {
   return _defaultPorts[scheme] || null
 }
 
 /**
  * Determines if the URL has credentials.
- * 
+ *
  * @param url - an URL
  */
-export function includesCredentials(url: URLRecord): boolean {
+export function includesCredentials(url: URLRecord) {
   return url.username !== '' || url.password !== ''
 }
 
 /**
  * Determines if an URL cannot have credentials.
- * 
+ *
  * @param url - an URL
  */
-export function cannotHaveAUsernamePasswordPort(url: URLRecord): boolean {
+export function cannotHaveAUsernamePasswordPort(url: URLRecord) {
   /**
    * A URL cannot have a username/password/port if its host is null or the
    * empty string, its cannot-be-a-base-URL flag is set, or its scheme is
@@ -153,15 +153,15 @@ export function cannotHaveAUsernamePasswordPort(url: URLRecord): boolean {
 
 /**
  * Serializes an URL into a string.
- * 
+ *
  * @param url - an URL
  */
-export function urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = false): string {
+export function urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = false) {
   /**
    * 1. Let output be url’s scheme and U+003A (:) concatenated.
    */
   let output = url.scheme + ':'
-  
+
   /**
    * 2. If url’s host is non-null:
    */
@@ -177,7 +177,7 @@ export function urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = fal
     if (includesCredentials(url)) {
       /**
        * 2.2.1. Append url’s username to output.
-       * 2.2.2. If url’s password is not the empty string, then append U+003A (:), 
+       * 2.2.2. If url’s password is not the empty string, then append U+003A (:),
        * followed by url’s password, to output.
        * 2.2.3. Append U+0040 (@) to output.
        */
@@ -189,7 +189,7 @@ export function urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = fal
     }
     /**
      * 2.3. Append url’s host, serialized, to output.
-     * 2.4. If url’s port is non-null, append U+003A (:) followed by url’s port, 
+     * 2.4. If url’s port is non-null, append U+003A (:) followed by url’s port,
      * serialized, to output.
      */
     output += hostSerializer(url.host)
@@ -218,7 +218,7 @@ export function urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = fal
   }
 
   /**
-   * 6. If url’s query is non-null, append U+003F (?), followed by url’s 
+   * 6. If url’s query is non-null, append U+003F (?), followed by url’s
    * query, to output.
    * 7. If the exclude fragment flag is unset and url’s fragment is non-null,
    * append U+0023 (#), followed by url’s fragment, to output.
@@ -235,10 +235,10 @@ export function urlSerializer(url: URLRecord, excludeFragmentFlag: boolean = fal
 
 /**
  * Serializes a host into a string.
- * 
+ *
  * @param host - a host
  */
-export function hostSerializer(host: Host): string {
+export function hostSerializer(host: Host) {
   /**
    * 1. If host is an IPv4 address, return the result of running the IPv4
    * serializer on host.
@@ -258,10 +258,10 @@ export function hostSerializer(host: Host): string {
 
 /**
  * Serializes an IPv4 address into a string.
- * 
+ *
  * @param address  - an IPv4 address
  */
-export function iPv4Serializer(address : number): string {
+export function iPv4Serializer(address : number) {
   /**
    * 1. Let output be the empty string.
    * 2. Let n be the value of address.
@@ -285,13 +285,13 @@ export function iPv4Serializer(address : number): string {
 
 /**
  * Serializes an IPv6 address into a string.
- * 
+ *
  * @param address  - an IPv6 address represented as a list of eight numbers
  */
-export function iPv6Serializer(address : number[]): string {
+export function iPv6Serializer(address : number[]) {
   /**
    * 1. Let output be the empty string.
-   * 2. Let compress be an index to the first IPv6 piece in the first longest 
+   * 2. Let compress be an index to the first IPv6 piece in the first longest
    * sequences of address’s IPv6 pieces that are 0.
    * In 0:f:0:0:f:f:0:0 it would point to the second 0.
    * 3. If there is no sequence of address’s IPv6 pieces that are 0 that is
@@ -342,7 +342,7 @@ export function iPv6Serializer(address : number[]): string {
     }
 
     /**
-     * 5.4. Append address[pieceIndex], represented as the shortest possible 
+     * 5.4. Append address[pieceIndex], represented as the shortest possible
      * lowercase hexadecimal number, to output.
      * 5.5. If pieceIndex is not 7, then append U+003A (:) to output.
      */
@@ -358,13 +358,13 @@ export function iPv6Serializer(address : number[]): string {
 
 /**
  * Parses an URL string.
- * 
+ *
  * @param input - input string
  * @param baseURL - base URL
  * @param encodingOverride - encoding override
  */
-export function urlParser(input: string, baseURL?: URLRecord, 
-  encodingOverride?: string): URLRecord | null {
+export function urlParser(input: string, baseURL?: URLRecord,
+  encodingOverride?: string) {
   /**
    * 1. Let url be the result of running the basic URL parser on input with
    * base, and encoding override as provided.
@@ -388,18 +388,18 @@ export function urlParser(input: string, baseURL?: URLRecord,
 
 /**
  * Parses an URL string.
- * 
+ *
  * @param input - input string
  * @param baseURL - base URL
  * @param encodingOverride - encoding override
  */
 export function basicURLParser(input: string, baseURL?: URLRecord | null,
   encodingOverride?: string, url?: URLRecord,
-  stateOverride?: ParserState): URLRecord | null {
+  stateOverride?: ParserState) {
   /**
    * 1. If url is not given:
    * 1.1. Set url to a new URL.
-   * 1.2. If input contains any leading or trailing C0 control or space, 
+   * 1.2. If input contains any leading or trailing C0 control or space,
    * validation error.
    * 1.3. Remove any leading and trailing C0 control or space from input.
    */
@@ -429,7 +429,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
    * 4. Let state be state override if given, or scheme start state otherwise.
    * 5. If base is not given, set it to null.
    * 6. Let encoding be UTF-8.
-   * 7. If encoding override is given, set encoding to the result of getting 
+   * 7. If encoding override is given, set encoding to the result of getting
    * an output encoding from encoding override.
    */
   let state = (stateOverride === undefined ? ParserState.SchemeStart : stateOverride)
@@ -484,7 +484,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
          * 1. If c is an ASCII alphanumeric, U+002B (+), U+002D (-), or U+002E
          * (.), append c, lowercased, to buffer.
          */
-        if (infraCodePoint.ASCIIAlphanumeric.test(walker.c()) || 
+        if (infraCodePoint.ASCIIAlphanumeric.test(walker.c()) ||
           walker.c() === '+' || walker.c() === '-' || walker.c() === '.') {
           buffer += walker.c().toLowerCase()
         } else if (walker.c() === ':') {
@@ -539,7 +539,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
             state = ParserState.File
           } else if (isSpecial(url) && baseURL !== null && baseURL.scheme === url.scheme) {
             /**
-             * 2.6. Otherwise, if url is special, base is non-null, and base’s 
+             * 2.6. Otherwise, if url is special, base is non-null, and base’s
              * scheme is equal to url’s scheme, set state to special relative
              * or authority state.
              */
@@ -560,7 +560,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           } else {
             /**
              * 2.9. Otherwise, set url’s cannot-be-a-base-URL flag, append an
-             * empty string to url’s path, and set state to 
+             * empty string to url’s path, and set state to
              * cannot-be-a-base-URL path state.
              */
             url._cannotBeABaseURLFlag = true
@@ -569,7 +569,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           }
         } else if (stateOverride === undefined) {
           /**
-           * 3. Otherwise, if state override is not given, set buffer to the 
+           * 3. Otherwise, if state override is not given, set buffer to the
            * empty string, state to no scheme state, and start over (from the
            * first code point in input).
            */
@@ -595,7 +595,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
          * a copy of base’s path, url’s query to base’s query, url’s
          * fragment to the empty string, set url’s cannot-be-a-base-URL
          * flag, and set state to fragment state.
-         * 3. Otherwise, if base’s scheme is not "file", set state to 
+         * 3. Otherwise, if base’s scheme is not "file", set state to
          * relative state and decrease pointer by one.
          * 4. Otherwise, set state to file state and decrease pointer by one.
          */
@@ -621,9 +621,9 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
       case ParserState.SpecialRelativeOrAuthority:
         /**
          * If c is U+002F (/) and remaining starts with U+002F (/), then set
-         * state to special authority ignore slashes state and increase 
+         * state to special authority ignore slashes state and increase
          * pointer by one.
-         * Otherwise, validation error, set state to relative state and 
+         * Otherwise, validation error, set state to relative state and
          * decrease pointer by one.
          */
         if (walker.c() === '/' && walker.remaining().startsWith('/')) {
@@ -673,7 +673,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
             url.query = baseURL.query
             break
           case '/':
-            /** 
+            /**
              * Set state to relative slash state.
              */
             state = ParserState.RelativeSlash
@@ -712,7 +712,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
             break
           default:
             /**
-             * If url is special and c is U+005C (\), validation error, 
+             * If url is special and c is U+005C (\), validation error,
              * set state to relative slash state.
              * Otherwise, run these steps:
              * 1. Set url’s username to base’s username, url’s password to
@@ -758,7 +758,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
         } else {
           if (baseURL === null) {
             throw new Error("Invalid parser state. Base URL is null.")
-          }  
+          }
           url.username = baseURL. username
           url.password = baseURL.password
           url.host = baseURL.host
@@ -828,7 +828,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
               passwordTokenSeenFlag = true
               continue
             }
-            const encodedCodePoints = utf8PercentEncode(codePoint, 
+            const encodedCodePoints = utf8PercentEncode(codePoint,
               _userInfoPercentEncodeSet)
             if (passwordTokenSeenFlag) {
               url.password += encodedCodePoints
@@ -906,15 +906,15 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
            * - c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
            * - url is special and c is U+005C (\)
            * then decrease pointer by one, and then:
-           * 3.1. If url is special and buffer is the empty string, validation 
+           * 3.1. If url is special and buffer is the empty string, validation
            * error, return failure.
-           * 3.2. Otherwise, if state override is given, buffer is the empty 
-           * string, and either url includes credentials or url’s port is 
+           * 3.2. Otherwise, if state override is given, buffer is the empty
+           * string, and either url includes credentials or url’s port is
            * non-null, validation error, return.
-           * 3.3. Let host be the result of host parsing buffer with url is 
+           * 3.3. Let host be the result of host parsing buffer with url is
            * not special.
            * 3.4. If host is failure, then return failure.
-           * 3.5. Set url’s host to host, buffer to the empty string, and 
+           * 3.5. Set url’s host to host, buffer to the empty string, and
            * state to path start state.
            * 3.6. If state override is given, then return.
            */
@@ -922,7 +922,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           if (isSpecial(url) && buffer === "") {
             validationError("Invalid input string.")
             return null
-          } else if (stateOverride !== undefined && buffer === "" && 
+          } else if (stateOverride !== undefined && buffer === "" &&
             (includesCredentials(url) || url.port !== null)) {
             validationError("Invalid input string.")
             return url
@@ -964,7 +964,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           if (buffer !== "") {
             /**
              * 2.1. If buffer is not the empty string, then:
-             * 2.1.1. Let port be the mathematical integer value that is 
+             * 2.1.1. Let port be the mathematical integer value that is
              * represented by buffer in radix-10 using ASCII digits for digits
              * with values 0 through 9.
              * 2.1.2. If port is greater than 2**16 − 1, validation error,
@@ -1101,12 +1101,12 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
         } else {
           /**
            * 2. Otherwise:
-           * 2.1. If base is non-null, base’s scheme is "file", and the 
-           * substring from pointer in input does not start with a Windows 
+           * 2.1. If base is non-null, base’s scheme is "file", and the
+           * substring from pointer in input does not start with a Windows
            * drive letter, then:
-           * 2.1.1. If base’s path[0] is a normalized Windows drive letter, 
+           * 2.1.1. If base’s path[0] is a normalized Windows drive letter,
            * then append base’s path[0] to url’s path.
-           * _Note:_ is a (platform-independent) Windows drive letter 
+           * _Note:_ is a (platform-independent) Windows drive letter
            * quirk. Both url’s and base’s host are null under these conditions
            * and therefore not copied.
            * 2.1.2. Otherwise, set url’s host to base’s host.
@@ -1188,7 +1188,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
            * 1. If url is special, then:
            * 1.1. If c is U+005C (\), validation error.
            * 1.2. Set state to path state.
-           * 1.3. If c is neither U+002F (/) nor U+005C (\), then decrease 
+           * 1.3. If c is neither U+002F (/) nor U+005C (\), then decrease
            * pointer by one.
            */
           if (walker.c() === '\\') {
@@ -1223,7 +1223,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
         break
 
       case ParserState.Path:
-        if ((walker.c() === EOF || walker.c() === '/') || 
+        if ((walker.c() === EOF || walker.c() === '/') ||
           (isSpecial(url) && walker.c() === '\\') ||
           (stateOverride === undefined && (walker.c() === '?' || walker.c() === '#'))) {
           /**
@@ -1251,7 +1251,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
             if (walker.c() !== '/' && !(isSpecial(url) && walker.c() === '\\')) {
               url.path.push("")
             }
-          } else if (isSingleDotPathSegment(buffer) && walker.c() !== '/' && 
+          } else if (isSingleDotPathSegment(buffer) && walker.c() !== '/' &&
             !(isSpecial(url) && walker.c() === '\\')) {
             /**
              * 1.3. Otherwise, if buffer is a single-dot path segment and if
@@ -1266,7 +1266,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
             if (url.scheme === "file" && url.path.length === 0 &&
               isWindowsDriveLetter(buffer)) {
               /**
-               * 1.4.1. If url’s scheme is "file", url’s path is empty, and 
+               * 1.4.1. If url’s scheme is "file", url’s path is empty, and
                * buffer is a Windows drive letter, then:
                * 1.4.1.1. If url’s host is neither the empty string nor null,
                * validation error, set url’s host to the empty string.
@@ -1290,8 +1290,8 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
            */
           buffer = ""
           /**
-           * 1.6. If url’s scheme is "file" and c is the EOF code point, 
-           * U+003F (?), or U+0023 (#), then while url’s path’s size is 
+           * 1.6. If url’s scheme is "file" and c is the EOF code point,
+           * U+003F (?), or U+0023 (#), then while url’s path’s size is
            * greater than 1 and url’s path[0] is the empty string, validation
            * error, remove the first item from url’s path.
            */
@@ -1318,11 +1318,11 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
         } else {
           /**
            * 2. Otherwise, run these steps:
-           * 2.1. If c is not a URL code point and not U+0025 (%), validation 
+           * 2.1. If c is not a URL code point and not U+0025 (%), validation
            * error.
            * 2.2. If c is U+0025 (%) and remaining does not start with two
            * ASCII hex digits, validation error.
-           * 2.3. UTF-8 percent encode c using the path percent-encode set, 
+           * 2.3. UTF-8 percent encode c using the path percent-encode set,
            * and append the result to buffer.
            */
           if (!_urlCodePoints.test(walker.c()) && walker.c() !== '%') {
@@ -1339,14 +1339,14 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
         /**
          * 1. If c is U+003F (?), then set url’s query to the empty string and
          * state to query state.
-         * 2. Otherwise, if c is U+0023 (#), then set url’s fragment to the 
+         * 2. Otherwise, if c is U+0023 (#), then set url’s fragment to the
          * empty string and state to fragment state.
          * 3. Otherwise:
-         * 3.1. If c is not the EOF code point, not a URL code point, and not 
+         * 3.1. If c is not the EOF code point, not a URL code point, and not
          * U+0025 (%), validation error.
          * 3.2. If c is U+0025 (%) and remaining does not start with two ASCII
          * hex digits, validation error.
-         * 3.3. If c is not the EOF code point, UTF-8 percent encode c using 
+         * 3.3. If c is not the EOF code point, UTF-8 percent encode c using
          * the C0 control percent-encode set, and append the result to url’s
          * path[0].
          */
@@ -1368,7 +1368,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           }
         }
         break
-        
+
       case ParserState.Query:
         /**
          * 1. If encoding is not UTF-8 and one of the following is true
@@ -1409,7 +1409,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
            */
           if (encoding.toUpperCase() !== "UTF-8") {
             throw new Error("Only UTF-8 encoding is supported.")
-          }        
+          }
           let bytes = utf8Encode(walker.c())
           /**
            * 3.4. If bytes starts with `&#` and ends with 0x3B (;), then:
@@ -1420,7 +1420,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
              * 3.4.1. Replace `&#` at the start of bytes with `%26%23`.
              * 3.4.2. Replace 0x3B (;) at the end of bytes with `%3B`.
              * 3.4.4. Append bytes, isomorphic decoded, to url’s query.
-             * _Note:_ can happen when encoding code points using a 
+             * _Note:_ can happen when encoding code points using a
              * non-UTF-8 encoding.
              */
             bytes = bytes.subarray(2, bytes.length - 1)
@@ -1438,7 +1438,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
              * url’s query.
              */
             for (const byte of bytes) {
-              if (byte < 0x21 || byte > 0x7E || byte === 0x22 || 
+              if (byte < 0x21 || byte > 0x7E || byte === 0x22 ||
                 byte === 0x23 || byte === 0x3C || byte === 0x3E ||
                 (byte === 0x27 && isSpecial(url))) {
                 url.query += percentEncode(byte)
@@ -1449,7 +1449,7 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           }
         }
         break
-            
+
       case ParserState.Fragment:
         /**
          * Switching on c:
@@ -1458,9 +1458,9 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
          * - U+0000 NULL
          * Validation error.
          * - Otherwise
-         * 1. If c is not a URL code point and not U+0025 (%), validation 
+         * 1. If c is not a URL code point and not U+0025 (%), validation
          * error.
-         * 2. If c is U+0025 (%) and remaining does not start with two ASCII 
+         * 2. If c is U+0025 (%) and remaining does not start with two ASCII
          * hex digits, validation error.
          * 3. UTF-8 percent encode c using the fragment percent-encode set and
          * append the result to url’s fragment.
@@ -1479,10 +1479,10 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
           url.fragment += utf8PercentEncode(walker.c(), _fragmentPercentEncodeSet)
         }
         break
-  
+
     }
 
-    if (walker.eof) 
+    if (walker.eof)
       break
     else
       walker.pointer++
@@ -1497,14 +1497,14 @@ export function basicURLParser(input: string, baseURL?: URLRecord | null,
 
 /**
  * Sets a URL's username.
- * 
+ *
  * @param url - a URL
  * @param username - username string
  */
 export function setTheUsername(url: URLRecord, username: string) {
   /**
    * 1. Set url’s username to the empty string.
-   * 2. For each code point in username, UTF-8 percent encode it using the 
+   * 2. For each code point in username, UTF-8 percent encode it using the
    * userinfo percent-encode set, and append the result to url’s username.
    */
   let result = ""
@@ -1516,14 +1516,14 @@ export function setTheUsername(url: URLRecord, username: string) {
 
 /**
  * Sets a URL's password.
- * 
+ *
  * @param url - a URL
  * @param username - password string
  */
 export function setThePassword(url: URLRecord, password: string) {
   /**
    * 1. Set url’s password to the empty string.
-   * 2. For each code point in password, UTF-8 percent encode it using the 
+   * 2. For each code point in password, UTF-8 percent encode it using the
    * userinfo percent-encode set, and append the result to url’s password.
    */
   let result = ""
@@ -1535,7 +1535,7 @@ export function setThePassword(url: URLRecord, password: string) {
 
 /**
  * Determines if the string represents a single dot path.
- * 
+ *
  * @param str - a string
  */
 export function isSingleDotPathSegment(str: string) {
@@ -1544,21 +1544,21 @@ export function isSingleDotPathSegment(str: string) {
 
 /**
  * Determines if the string represents a double dot path.
- * 
+ *
  * @param str - a string
  */
 export function isDoubleDotPathSegment(str: string) {
   const lowerStr = str.toLowerCase()
-  return lowerStr === ".." || lowerStr === ".%2e" || 
+  return lowerStr === ".." || lowerStr === ".%2e" ||
     lowerStr === "%2e." || lowerStr === "%2e%2e"
 }
 
 /**
  * Shorten's URL's path.
- * 
+ *
  * @param url - an URL
  */
-export function shorten(url: URLRecord): void {
+export function shorten(url: URLRecord) {
   /**
    * 1. Let path be url’s path.
    * 2. If path is empty, then return.
@@ -1575,38 +1575,38 @@ export function shorten(url: URLRecord): void {
 
 /**
  * Determines if a string is a normalized Windows drive letter.
- * 
+ *
  * @param str - a string
  */
-export function isNormalizedWindowsDriveLetter(str: string): boolean {
+export function isNormalizedWindowsDriveLetter(str: string) {
   /**
    * A normalized Windows drive letter is a Windows drive letter of which the
    * second code point is U+003A (:).
    */
-  return str.length >= 2 && infraCodePoint.ASCIIAlpha.test(str[0]) && 
+  return str.length >= 2 && infraCodePoint.ASCIIAlpha.test(str[0]) &&
     str[1] === ':'
 }
 
 /**
  * Determines if a string is a Windows drive letter.
- * 
+ *
  * @param str - a string
  */
-export function isWindowsDriveLetter(str: string): boolean {
+export function isWindowsDriveLetter(str: string) {
   /**
    * A Windows drive letter is two code points, of which the first is an ASCII
    * alpha and the second is either U+003A (:) or U+007C (|).
    */
-  return str.length >= 2 && infraCodePoint.ASCIIAlpha.test(str[0]) && 
+  return str.length >= 2 && infraCodePoint.ASCIIAlpha.test(str[0]) &&
     (str[1] === ':' || str[1] === '|')
 }
 
 /**
  * Determines if a string starts with a Windows drive letter.
- * 
+ *
  * @param str - a string
  */
-export function startsWithAWindowsDriveLetter(str: string): boolean {
+export function startsWithAWindowsDriveLetter(str: string) {
   /**
    * A string starts with a Windows drive letter if all of the following are
    * true:
@@ -1616,18 +1616,18 @@ export function startsWithAWindowsDriveLetter(str: string): boolean {
    * U+003F (?), or U+0023 (#).
    */
   return str.length >= 2 && isWindowsDriveLetter(str) &&
-    (str.length === 2 || (str[2] === '/' || str[2] === '\\' || 
+    (str.length === 2 || (str[2] === '/' || str[2] === '\\' ||
     str[2] === '?' || str[2] === '#'))
 }
 
 /**
  * Parses a host string.
- * 
+ *
  * @param input - input string
- * @param isNotSpecial - `true` if the source URL is not special; otherwise 
+ * @param isNotSpecial - `true` if the source URL is not special; otherwise
  * `false`.
  */
-export function hostParser(input: string, isNotSpecial = false): string | number | number[] | null {
+export function hostParser(input: string, isNotSpecial = false) {
   /**
    * 1. If isNotSpecial is not given, then set isNotSpecial to false.
    * 2. If input starts with U+005B ([), then:
@@ -1674,7 +1674,7 @@ export function hostParser(input: string, isNotSpecial = false): string | number
   }
   if (_forbiddenHostCodePoint.test(asciiDomain)) {
     validationError("Invalid domain.")
-    return null      
+    return null
   }
 
   /**
@@ -1690,13 +1690,13 @@ export function hostParser(input: string, isNotSpecial = false): string | number
 
 /**
  * Parses a string containing an IP v4 address.
- * 
+ *
  * @param input - input string
- * @param isNotSpecial - `true` if the source URL is not special; otherwise 
+ * @param isNotSpecial - `true` if the source URL is not special; otherwise
  * `false`.
  */
-export function iPv4NumberParser(input: string, 
-  validationErrorFlag: { value: boolean } = { value: false }): number | null {
+export function iPv4NumberParser(input: string,
+  validationErrorFlag: { value: boolean } = { value: false }) {
   /**
    * 1. Let R be 10.
    */
@@ -1727,7 +1727,7 @@ export function iPv4NumberParser(input: string,
   }
   /**
    * 4. If input is the empty string, then return zero.
-   * 5. If input contains a code point that is not a radix-R digit, then 
+   * 5. If input contains a code point that is not a radix-R digit, then
    * return failure.
    */
   if (input === "") return 0
@@ -1743,10 +1743,10 @@ export function iPv4NumberParser(input: string,
 
 /**
  * Parses a string containing an IP v4 address.
- * 
+ *
  * @param input - input string
  */
-export function iPv4Parser(input: string): string | number | null {
+export function iPv4Parser(input: string) {
   /**
    * 1. Let validationErrorFlag be unset.
    * 2. Let parts be input split on U+002E (.).
@@ -1785,9 +1785,9 @@ export function iPv4Parser(input: string): string | number | null {
   /**
    * 7. If validationErrorFlag is set, validation error.
    * 8. If any item in numbers is greater than 255, validation error.
-   * 9. If any but the last item in numbers is greater than 255, return 
+   * 9. If any but the last item in numbers is greater than 255, return
    * failure.
-   * 10. If the last item in numbers is greater than or equal to 
+   * 10. If the last item in numbers is greater than or equal to
    * 256**(5 − the number of items in numbers), validation error, return failure.
    */
   if (validationErrorFlag.value) validationError("Invalid IP v4 address.")
@@ -1828,15 +1828,15 @@ export function iPv4Parser(input: string): string | number | null {
 
 /**
  * Parses a string containing an IP v6 address.
- * 
+ *
  * @param input - input string
  */
-export function iPv6Parser(input: string): number[] | null {
+export function iPv6Parser(input: string) {
   /**
    * 1. Let address be a new IPv6 address whose IPv6 pieces are all 0.
    * 2. Let pieceIndex be 0.
    * 3. Let compress be null.
-   * 4. Let pointer be a pointer into input, initially 0 (pointing to the 
+   * 4. Let pointer be a pointer into input, initially 0 (pointing to the
    * first code point).
    */
   const EOF = ""
@@ -1846,7 +1846,7 @@ export function iPv6Parser(input: string): number[] | null {
   const walker = new StringWalker(input)
   /**
    * 5. If c is U+003A (:), then:
-   * 5.1. If remaining does not start with U+003A (:), validation error, 
+   * 5.1. If remaining does not start with U+003A (:), validation error,
    * return failure.
    * 5.2. Increase pointer by 2.
    * 5.3. Increase pieceIndex by 1 and then set compress to pieceIndex.
@@ -1876,7 +1876,7 @@ export function iPv6Parser(input: string): number[] | null {
     /**
      * 6.2. If c is U+003A (:), then:
      * 6.2.1. If compress is non-null, validation error, return failure.
-     * 6.2.2. Increase pointer and pieceIndex by 1, set compress to pieceIndex, 
+     * 6.2.2. Increase pointer and pieceIndex by 1, set compress to pieceIndex,
      * and then continue.
      */
     if (walker.c() === ':') {
@@ -1909,7 +1909,7 @@ export function iPv6Parser(input: string): number[] | null {
       /**
        * 6.5.1. If length is 0, validation error, return failure.
        * 6.5.2. Decrease pointer by length.
-       * 6.5.3. If pieceIndex is greater than 6, validation error, return 
+       * 6.5.3. If pieceIndex is greater than 6, validation error, return
        * failure.
        * 6.5.4. Let numbersSeen be 0.
        */
@@ -1992,7 +1992,7 @@ export function iPv6Parser(input: string): number[] | null {
         if (ipv4Piece === null) {
           validationError("Invalid IP v6 address.")
           return null
-        }          
+        }
         address[pieceIndex] = address[pieceIndex] * 0x100 + ipv4Piece
         numbersSeen++
         if (numbersSeen === 2 || numbersSeen === 4) pieceIndex++
@@ -2021,7 +2021,7 @@ export function iPv6Parser(input: string): number[] | null {
       }
     } else if (walker.c() !== EOF) {
       /**
-       * 6.7. Otherwise, if c is not the EOF code point, validation error, 
+       * 6.7. Otherwise, if c is not the EOF code point, validation error,
        * return failure.
        */
       validationError("Invalid IP v6 address.")
@@ -2039,7 +2039,7 @@ export function iPv6Parser(input: string): number[] | null {
    * 7. If compress is non-null, then:
    * 7.1. Let swaps be pieceIndex − compress.
    * 7.2. Set pieceIndex to 7.
-   * 7.3. While pieceIndex is not 0 and swaps is greater than 0, swap 
+   * 7.3. While pieceIndex is not 0 and swaps is greater than 0, swap
    * address[pieceIndex] with address[compress + swaps − 1], and then decrease
    * both pieceIndex and swaps by 1.
    */
@@ -2054,7 +2054,7 @@ export function iPv6Parser(input: string): number[] | null {
     }
   } else if (compress === null && pieceIndex !== 8) {
     /**
-     * 8. Otherwise, if compress is null and pieceIndex is not 8, 
+     * 8. Otherwise, if compress is null and pieceIndex is not 8,
      * validation error, return failure.
      */
     validationError("Invalid IP v6 address.")
@@ -2069,10 +2069,10 @@ export function iPv6Parser(input: string): number[] | null {
 
 /**
  * Parses an opaque host string.
- * 
+ *
  * @param input - a string
  */
-export function opaqueHostParser(input: string): string | null {
+export function opaqueHostParser(input: string) {
   /**
    * 1. If input contains a forbidden host code point excluding U+0025 (%),
    * validation error, return failure.
@@ -2097,19 +2097,19 @@ export function opaqueHostParser(input: string): string | null {
  * Resolves a Blob URL from the user agent's Blob URL store.
  * function is not implemented.
  * See: https://w3c.github.io/FileAPI/#blob-url-resolve
- * 
+ *
  * @param url - an url
  */
-export function resolveABlobURL(url: URLRecord): any {
+export function resolveABlobURL(url: URLRecord) {
   return null
 }
 
 /**
  * Percent encodes a byte.
- * 
+ *
  * @param value - a byte
  */
-export function percentEncode(value: number): string {
+export function percentEncode(value: number) {
   /**
    * To percent encode a byte into a percent-encoded byte, return a string
    * consisting of U+0025 (%), followed by two ASCII upper hex digits
@@ -2120,10 +2120,10 @@ export function percentEncode(value: number): string {
 
 /**
  * Percent decodes a byte sequence input.
- * 
+ *
  * @param input - a byte sequence
  */
-export function percentDecode(input: Uint8Array): Uint8Array {
+export function percentDecode(input: Uint8Array) {
   const isHexDigit = (byte: number): boolean => {
     return (byte >= 0x30 && byte <= 0x39) || (byte >= 0x41 && byte <= 0x46) ||
       (byte >= 0x61 && byte <= 0x66)
@@ -2143,7 +2143,7 @@ export function percentDecode(input: Uint8Array): Uint8Array {
      * to 0x46 (F), and 0x61 (a) to 0x66 (f), all inclusive, append byte
      * to output.
      * 2.3. Otherwise:
-     * 2.3.1. Let bytePoint be the two bytes after byte in input, decoded, 
+     * 2.3.1. Let bytePoint be the two bytes after byte in input, decoded,
      * and then interpreted as hexadecimal number.
      * 2.3.2. Append a byte whose value is bytePoint to output.
      * 2.3.3. Skip the next two bytes in input.
@@ -2169,10 +2169,10 @@ export function percentDecode(input: Uint8Array): Uint8Array {
 
 /**
  * String percent decodes a string.
- * 
+ *
  * @param input - a string
  */
-export function stringPercentDecode(input: string): Uint8Array {
+export function stringPercentDecode(input: string) {
   /**
    * 1. Let bytes be the UTF-8 encoding of input.
    * 2. Return the percent decoding of bytes.
@@ -2182,15 +2182,15 @@ export function stringPercentDecode(input: string): Uint8Array {
 
 /**
  * UTF-8 percent encodes a code point, using a percent encode set.
- * 
+ *
  * @param codePoint - a code point
  * @param percentEncodeSet - a percent encode set
  */
-export function utf8PercentEncode(codePoint: string, percentEncodeSet: RegExp): string {
+export function utf8PercentEncode(codePoint: string, percentEncodeSet: RegExp) {
   /**
    * 1. If codePoint is not in percentEncodeSet, then return codePoint.
    * 2. Let bytes be the result of running UTF-8 encode on codePoint.
-   * 3. Percent encode each byte in bytes, and then return the results 
+   * 3. Percent encode each byte in bytes, and then return the results
    * concatenated, in the same order.
    */
   if (!percentEncodeSet.test(codePoint)) return codePoint
@@ -2204,27 +2204,27 @@ export function utf8PercentEncode(codePoint: string, percentEncodeSet: RegExp): 
 
 /**
  * Determines if two hosts are considered equal.
- * 
+ *
  * @param hostA - a host
  * @param hostB - a host
  */
-export function hostEquals(hostA: Host, hostB: Host): boolean {
+export function hostEquals(hostA: Host, hostB: Host) {
   return hostA === hostB
 }
 
 /**
  * Determines if two URLs are considered equal.
- * 
+ *
  * @param urlA - a URL
  * @param urlB - a URL
  * @param excludeFragmentsFlag - whether to ignore fragments while comparing
  */
 export function urlEquals(urlA: URLRecord, urlB: URLRecord,
-  excludeFragmentsFlag = false): boolean {
+  excludeFragmentsFlag = false) {
   /**
-   * 1. Let serializedA be the result of serializing A, with the exclude 
+   * 1. Let serializedA be the result of serializing A, with the exclude
    * fragment flag set if the exclude fragments flag is set.
-   * 2. Let serializedB be the result of serializing B, with the exclude 
+   * 2. Let serializedB be the result of serializing B, with the exclude
    * fragment flag set if the exclude fragments flag is set.
    * 3. Return true if serializedA is serializedB, and false otherwise.
    */
@@ -2234,10 +2234,10 @@ export function urlEquals(urlA: URLRecord, urlB: URLRecord,
 
 /**
  * Parses an `application/x-www-form-urlencoded` string.
- * 
+ *
  * @param input - a string
  */
-export function urlEncodedStringParser(input: string): [string, string][] {
+export function urlEncodedStringParser(input: string) {
   /**
    * The application/x-www-form-urlencoded string parser takes a string input,
    * UTF-8 encodes it, and then returns the result of
@@ -2248,10 +2248,10 @@ export function urlEncodedStringParser(input: string): [string, string][] {
 
 /**
  * Parses `application/x-www-form-urlencoded` bytes.
- * 
+ *
  * @param input - a byte sequence
  */
-export function urlEncodedParser(input: Uint8Array): [string, string][] {
+export function urlEncodedParser(input: Uint8Array) {
   /**
    * 1. Let sequences be the result of splitting input on 0x26 (&).
    */
@@ -2319,16 +2319,16 @@ export function urlEncodedParser(input: Uint8Array): [string, string][] {
 
 /**
  * Serializes `application/x-www-form-urlencoded` bytes.
- * 
+ *
  * @param input - a byte sequence
  */
-export function urlEncodedByteSerializer(input: Uint8Array): string {
+export function urlEncodedByteSerializer(input: Uint8Array) {
   /**
    * 1. Let output be the empty string.
    * 2. For each byte in input, depending on byte:
    * 0x20 (SP)
    * Append U+002B (+) to output.
-   * 
+   *
    * 0x2A (*)
    * 0x2D (-)
    * 0x2E (.)
@@ -2337,7 +2337,7 @@ export function urlEncodedByteSerializer(input: Uint8Array): string {
    * 0x5F (_)
    * 0x61 (a) to 0x7A (z)
    * Append a code point whose value is byte to output.
-   * 
+   *
    * Otherwise
    * Append byte, percent encoded, to output.
    * 3. Return output.
@@ -2359,11 +2359,11 @@ export function urlEncodedByteSerializer(input: Uint8Array): string {
 
 /**
  * Serializes `application/x-www-form-urlencoded` tuples.
- * 
+ *
  * @param input - input tuple of name/value pairs
  * @param encodingOverride: encoding override
  */
-export function urlEncodedSerializer(tuples: [string, string][], encodingOverride?: string): string {
+export function urlEncodedSerializer(tuples: [string, string][], encodingOverride?: string) {
   /**
    * 1. Let encoding be UTF-8.
    * 2. If encoding override is given, set encoding to the result of getting
@@ -2421,12 +2421,12 @@ export function urlEncodedSerializer(tuples: [string, string][], encodingOverrid
 
 /**
  * Returns a URL's origin.
- * 
+ *
  * @param url - a URL
  */
 export function origin(url: URLRecord): Origin {
   /**
-   * A URL’s origin is the origin returned by running these steps, switching 
+   * A URL’s origin is the origin returned by running these steps, switching
    * on URL’s scheme:
    * "blob"
    * 1. If URL’s blob URL entry is non-null, then return URL’s blob URL
@@ -2472,13 +2472,13 @@ export function origin(url: URLRecord): Origin {
 
 /**
  * Converts a domain string to ASCII.
- * 
+ *
  * @param domain - a domain string
  */
-export function domainToASCII(domain: string, beStrict = false): string | null {
+export function domainToASCII(domain: string, beStrict = false) {
   /**
    * 1. If beStrict is not given, set it to false.
-   * 2. Let result be the result of running Unicode ToASCII with domain_name 
+   * 2. Let result be the result of running Unicode ToASCII with domain_name
    * set to domain, UseSTD3ASCIIRules set to beStrict, CheckHyphens set to
    * false, CheckBidi set to true, CheckJoiners set to true,
    * Transitional_Processing set to false, and VerifyDnsLength set to beStrict.
@@ -2496,16 +2496,16 @@ export function domainToASCII(domain: string, beStrict = false): string | null {
 
 /**
  * Converts a domain string to Unicode.
- * 
+ *
  * @param domain - a domain string
  */
-export function domainToUnicode(domain: string, beStrict = false): string {
+export function domainToUnicode(domain: string, beStrict = false) {
   /**
    * 1. Let result be the result of running Unicode ToUnicode with domain_name
    * set to domain, CheckHyphens set to false, CheckBidi set to true,
    * CheckJoiners set to true, UseSTD3ASCIIRules set to false, and
    * Transitional_Processing set to false.
-   * 2. Signify validation errors for any returned errors, and then, 
+   * 2. Signify validation errors for any returned errors, and then,
    * return result.
    */
   // Use node.js function
@@ -2520,16 +2520,16 @@ export function domainToUnicode(domain: string, beStrict = false): string {
  * Serializes an origin.
  * function is from the HTML spec:
  * https://html.spec.whatwg.org/#ascii-serialisation-of-an-origin
- * 
+ *
  * @param origin - an origin
  */
-export function asciiSerializationOfAnOrigin(origin: Origin): string {
+export function asciiSerializationOfAnOrigin(origin: Origin) {
   /**
    * 1. If origin is an opaque origin, then return "null".
    * 2. Otherwise, let result be origin's scheme.
    * 3. Append "://" to result.
    * 4. Append origin's host, serialized, to result.
-   * 5. If origin's port is non-null, append a U+003A COLON character (:), 
+   * 5. If origin's port is non-null, append a U+003A COLON character (:),
    * and origin's port, serialized, to result.
    * 6. Return result.
    */

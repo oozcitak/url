@@ -1,6 +1,6 @@
 {
   "name": "@oozcitak/url",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "keywords": [
     "url",
     "whatwg"
@@ -26,11 +26,11 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@oozcitak/util": "^9.0.1",
-    "@oozcitak/infra": "^2.0.0"
+    "@oozcitak/util": "^9.0.2",
+    "@oozcitak/infra": "^2.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.7.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },

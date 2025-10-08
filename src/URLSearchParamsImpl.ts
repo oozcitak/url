@@ -10,9 +10,9 @@ export class URLSearchParamsImpl implements URLSearchParams {
   _list: [string, string][] = []
   _urlObject: URL | null = null
 
-  /** 
+  /**
    * Initializes a new `URLSearchParams`.
-   * 
+   *
    * @param init - initial values of query parameters
    */
   constructor(init: string[][] | { [key: string]: string } | string = "") {
@@ -42,7 +42,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
         if (init.hasOwnProperty(name)) {
           this._list.push([name, init[name]])
         }
-      }      
+      }
     } else {
       this._list = urlEncodedStringParser(init)
     }
@@ -51,7 +51,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
   /**
    * Runs the update steps.
    */
-  _updateSteps(): void {
+  _updateSteps() {
     /**
      * 1. Let query be the serialization of URLSearchParams object’s list.
      * 2. If query is the empty string, then set query to null.
@@ -63,9 +63,9 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  append(name: string, value: string): void {
+  append(name: string, value: string) {
     /**
-     * 1. Append a new name-value pair whose name is name and value is value, 
+     * 1. Append a new name-value pair whose name is name and value is value,
      * to list.
      * 2. Run the update steps.
      */
@@ -74,7 +74,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  delete(name: string): void {
+  delete(name: string) {
     /**
      * 1. Remove all name-value pairs whose name is name from list.
      * 2. Run the update steps.
@@ -86,9 +86,9 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  get(name: string): string | null {
+  get(name: string) {
     /**
-     * The get(name) method, when invoked, must return the value of the 
+     * The get(name) method, when invoked, must return the value of the
      * first name-value pair whose name is name in list, if there is such
      * a pair, and null otherwise.
      */
@@ -99,7 +99,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  getAll(name: string): string[] {
+  getAll(name: string) {
     /**
      * The getAll(name) method, when invoked, must return the values of all
      * name-value pairs whose name is name, in list, in list order, and the
@@ -113,9 +113,9 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  has(name: string): boolean {
+  has(name: string) {
     /**
-     * The has(name) method, when invoked, must return true if there is 
+     * The has(name) method, when invoked, must return true if there is
      * a name-value pair whose name is name in list, and false otherwise.
      */
     for (const item of this._list) {
@@ -125,10 +125,10 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  set(name: string, value: string): void {
+  set(name: string, value: string) {
     /**
-     * 1. If there are any name-value pairs whose name is name, in list, 
-     * set the value of the first such name-value pair to value and remove 
+     * 1. If there are any name-value pairs whose name is name, in list,
+     * set the value of the first such name-value pair to value and remove
      * the others.
      * 2. Otherwise, append a new name-value pair whose name is name and value
      * is value, to list.
@@ -155,7 +155,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  sort(): void {
+  sort() {
     /**
      * 1. Sort all name-value pairs, if any, by their names. Sorting must be
      * done by comparison of code units. The relative order between name-value
@@ -167,7 +167,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  *[Symbol.iterator](): IterableIterator<[string, string]> {
+  *[Symbol.iterator]() {
     /**
      * The value pairs to iterate over are the list name-value pairs with the
      * key being the name and the value being the value.
@@ -178,7 +178,7 @@ export class URLSearchParamsImpl implements URLSearchParams {
   }
 
   /** @inheritdoc */
-  toString(): string {
+  toString() {
     return urlEncodedSerializer(this._list)
   }
 
